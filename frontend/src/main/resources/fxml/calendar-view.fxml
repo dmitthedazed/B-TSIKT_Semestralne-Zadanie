@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.combined.frontend.controller.CalendarController"
+      spacing="15" alignment="TOP_CENTER">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Calendar" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Previous Month" onAction="#handlePreviousMonth"/>
+        <Label fx:id="monthYearLabel" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+        <Button text="Next Month" onAction="#handleNextMonth"/>
+    </HBox>
+
+    <GridPane fx:id="calendarGrid" hgap="5" vgap="5" alignment="CENTER">
+        <!-- Day of week headers -->
+        <Label text="Sun" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-font-weight: bold;"/>
+        <Label text="Mon" GridPane.rowIndex="0" GridPane.columnIndex="1" style="-fx-font-weight: bold;"/>
+        <Label text="Tue" GridPane.rowIndex="0" GridPane.columnIndex="2" style="-fx-font-weight: bold;"/>
+        <Label text="Wed" GridPane.rowIndex="0" GridPane.columnIndex="3" style="-fx-font-weight: bold;"/>
+        <Label text="Thu" GridPane.rowIndex="0" GridPane.columnIndex="4" style="-fx-font-weight: bold;"/>
+        <Label text="Fri" GridPane.rowIndex="0" GridPane.columnIndex="5" style="-fx-font-weight: bold;"/>
+        <Label text="Sat" GridPane.rowIndex="0" GridPane.columnIndex="6" style="-fx-font-weight: bold;"/>
+    </GridPane>
+
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill: red;"/>
+
+</VBox>

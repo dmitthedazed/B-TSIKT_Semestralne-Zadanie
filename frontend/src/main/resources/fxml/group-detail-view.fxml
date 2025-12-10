@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.combined.frontend.controller.GroupDetailController"
+            prefHeight="600.0" prefWidth="800.0">
+
+    <top>
+        <VBox alignment="CENTER_LEFT" spacing="5" style="-fx-padding: 10; -fx-background-color: #f8f8f8; -fx-border-color: #eee; -fx-border-width: 0 0 1 0;">
+            <Label fx:id="groupNameLabel" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+            <Label fx:id="groupDescriptionLabel" style="-fx-font-size: 14px; -fx-text-fill: #555;"/>
+            <Label fx:id="groupInfoLabel" style="-fx-font-size: 12px; -fx-text-fill: #777;"/>
+        </VBox>
+    </top>
+
+    <center>
+        <TabPane fx:id="groupTabPane" BorderPane.alignment="CENTER">
+            <Tab text="Overview" closable="false"/>
+            <Tab text="Tasks" closable="false"/>
+            <Tab text="Materials" closable="false"/>
+            <Tab text="Members" closable="false"/>
+            <Tab text="Stats" closable="false"/>
+        </TabPane>
+    </center>
+</BorderPane>

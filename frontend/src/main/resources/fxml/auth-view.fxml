@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.combined.frontend.controller.AuthViewController"
+      alignment="CENTER"
+      spacing="12"
+      style="-fx-padding: 30;">
+
+    <children>
+        <Label text="StudyHub" style="-fx-font-size: 24px; -fx-font-weight: bold;" />
+        <Label text="Sign in or create an account" style="-fx-text-fill: #666;" />
+
+        <TabPane fx:id="authTabPane" VBox.vgrow="ALWAYS" maxWidth="520" prefWidth="520">
+            <tabs>
+                <Tab fx:id="loginTab" text="Login" closable="false">
+                    <content>
+                        <StackPane alignment="CENTER">
+                            <fx:include source="login.fxml" fx:id="loginView" />
+                        </StackPane>
+                    </content>
+                </Tab>
+                <Tab fx:id="registerTab" text="Register" closable="false">
+                    <content>
+                        <StackPane alignment="CENTER">
+                            <fx:include source="register.fxml" fx:id="registerView" />
+                        </StackPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </children>
+</VBox>

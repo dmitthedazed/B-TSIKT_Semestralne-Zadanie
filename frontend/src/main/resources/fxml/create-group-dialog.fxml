@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<DialogPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.combined.frontend.controller.CreateGroupController"
+            prefWidth="400" prefHeight="250">
+    <headerText>Create New Study Group</headerText>
+    <content>
+        <VBox spacing="10">
+            <GridPane hgap="10" vgap="10">
+                <Label text="Group Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="groupNameField" promptText="Enter group name" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Description:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextArea fx:id="groupDescriptionField" promptText="Enter group description" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                          prefRowCount="3" wrapText="true"/>
+            </GridPane>
+            <Label fx:id="errorMessageLabel" textFill="red" wrapText="true"/>
+        </VBox>
+    </content>
+    <buttonTypes>
+        <ButtonType fx:constant="OK"/>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
+</DialogPane>

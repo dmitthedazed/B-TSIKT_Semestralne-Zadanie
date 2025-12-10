@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<DialogPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.combined.frontend.controller.CreateResourceController"
+            prefWidth="400" prefHeight="200">
+    <headerText>Create New Resource</headerText>
+    <content>
+        <VBox spacing="10">
+            <GridPane hgap="10" vgap="10" prefWidth="380">
+                <columnConstraints>
+                    <ColumnConstraints halignment="RIGHT" prefWidth="80"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="titleField" promptText="Enter resource title" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="URL:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="urlField" promptText="Enter resource URL" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="File:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <HBox spacing="8" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                    <TextField fx:id="filePathField" promptText="No file selected" editable="false" HBox.hgrow="ALWAYS"/>
+                    <Button text="Browse..." onAction="#handleBrowseFile"/>
+                </HBox>
+            </GridPane>
+            <Label fx:id="errorMessageLabel" textFill="red" wrapText="true"/>
+        </VBox>
+    </content>
+    <buttonTypes>
+        <ButtonType fx:constant="OK"/>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
+</DialogPane>

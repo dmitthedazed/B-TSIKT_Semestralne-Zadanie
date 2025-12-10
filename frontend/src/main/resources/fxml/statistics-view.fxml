@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.combined.frontend.controller.StatsController"
+      alignment="CENTER" spacing="12">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Group Statistics" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+    <HBox spacing="20" alignment="CENTER">
+        <PieChart fx:id="taskStatusPieChart" prefWidth="320" prefHeight="260"/>
+        <BarChart fx:id="tasksPerMemberBarChart" prefWidth="360" prefHeight="260">
+            <xAxis>
+                <CategoryAxis label="Member"/>
+            </xAxis>
+            <yAxis>
+                <NumberAxis label="Tasks"/>
+            </yAxis>
+        </BarChart>
+    </HBox>
+
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill: #555;"/>
+
+</VBox>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<DialogPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.combined.frontend.controller.CreateTaskController"
+            prefWidth="450" prefHeight="300">
+    <headerText>Create New Task</headerText>
+    <content>
+        <VBox spacing="10">
+            <GridPane hgap="10" vgap="10">
+                <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="titleField" promptText="Enter task title" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Description:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextArea fx:id="descriptionField" promptText="Enter task description" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                          prefRowCount="3" wrapText="true"/>
+
+                <Label text="Status:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="statusComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Assigned to:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="assignedToComboBox" GridPane.rowIndex="3" GridPane.columnIndex="1" promptText="Unassigned"/>
+
+                <Label text="Deadline:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <DatePicker fx:id="deadlinePicker" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+            </GridPane>
+            <Label fx:id="errorMessageLabel" textFill="red" wrapText="true"/>
+        </VBox>
+    </content>
+    <buttonTypes>
+        <ButtonType fx:constant="OK"/>
+        <ButtonType fx:constant="CANCEL"/>
+    </buttonTypes>
+</DialogPane>

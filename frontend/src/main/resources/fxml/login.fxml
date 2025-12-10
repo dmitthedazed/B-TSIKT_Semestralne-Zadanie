@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.combined.frontend.controller.LoginController"
+      alignment="CENTER" spacing="15" style="-fx-padding: 40;">
+
+    <Label text="Login to Your Account" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+    <GridPane hgap="10" vgap="10" alignment="CENTER">
+        <columnConstraints>
+            <ColumnConstraints halignment="RIGHT" prefWidth="140"/>
+            <ColumnConstraints hgrow="ALWAYS" prefWidth="250"/>
+        </columnConstraints>
+
+        <Label text="Email / Username:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="emailField" promptText="Enter email or username" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Password:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <PasswordField fx:id="passwordField" promptText="Enter your password" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <HBox spacing="8" alignment="CENTER">
+        <Button text="Sign In" onAction="#handleLogin" style="-fx-font-size: 14px;"/>
+        <Button text="Sign In as occaecat" onAction="#handleAutoLoginOccaecat" style="-fx-font-size: 14px;"/>
+        <Button text="Sign In as Test" onAction="#handleAutoLogin" style="-fx-font-size: 14px;"/>
+    </HBox>
+    <HBox spacing="6" alignment="CENTER">
+        <Label text="Don't have an account?"/>
+        <Hyperlink text="Register" onAction="#switchToRegister"/>
+        <Label text="or"/>
+        <Hyperlink text="Try demo" onAction="#handleTryDemo"/>
+    </HBox>
+
+</VBox>

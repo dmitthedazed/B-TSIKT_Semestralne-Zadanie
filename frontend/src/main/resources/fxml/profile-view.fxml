@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.combined.frontend.controller.ProfileController"
+      spacing="15" alignment="TOP_CENTER">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="User Profile" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+    <GridPane hgap="10" vgap="10" alignment="CENTER">
+        <columnConstraints>
+            <ColumnConstraints halignment="RIGHT" prefWidth="120"/>
+            <ColumnConstraints hgrow="ALWAYS" prefWidth="250"/>
+        </columnConstraints>
+
+        <Label text="First Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="firstNameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Last Name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="lastNameField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Nickname:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="nicknameField" GridPane.rowIndex="2" GridPane.columnIndex="1" editable="false"/>
+
+        <Label text="Email:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="emailField" GridPane.rowIndex="3" GridPane.columnIndex="1" editable="false"/>
+
+        <Label text="Password:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <PasswordField fx:id="passwordField" promptText="Leave blank to keep current" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+        <Label text="Confirm Password:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <PasswordField fx:id="confirmPasswordField" promptText="Confirm new password" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Update Profile" onAction="#handleUpdateProfile"/>
+        <Button text="Change Password" onAction="#handleChangePassword"/>
+    </HBox>
+
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill: green;"/>
+
+</VBox>

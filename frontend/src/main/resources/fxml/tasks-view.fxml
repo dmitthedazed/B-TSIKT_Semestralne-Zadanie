@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.combined.frontend.controller.TasksController"
+      spacing="10">
+
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <children>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Label text="Tasks" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label text="Status:"/>
+            <ComboBox fx:id="statusFilterComboBox" promptText="Filter by Status"/>
+            <Label text="Assigned To:"/>
+            <TextField fx:id="assignedToFilterField" promptText="Filter by Assignee"/>
+            <Button text="Create Task" onAction="#onCreateTaskClick"/>
+            <Button text="Refresh" onAction="#onRefreshClick"/>
+        </HBox>
+
+        <TableView fx:id="tasksTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
+                <TableColumn fx:id="titleColumn" text="Title" prefWidth="150"/>
+                <TableColumn fx:id="descriptionColumn" text="Description" prefWidth="250"/>
+                <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+                <TableColumn fx:id="assignedToColumn" text="Assigned To" prefWidth="100"/>
+                <TableColumn fx:id="deadlineColumn" text="Deadline" prefWidth="120"/>
+                <TableColumn fx:id="actionColumn" text="Actions" prefWidth="120"/>
+            </columns>
+        </TableView>
+
+        <Label fx:id="statusLabel" text="" style="-fx-text-fill: red;"/>
+    </children>
+</VBox>
