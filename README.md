@@ -74,10 +74,6 @@
 - Secure password hashing
 - Role-based permissions
 - Protected API endpoints
-- OAuth2 login with Google (configurable via GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET)
-
-### 🧪 CI
-- GitHub Actions workflow runs tests on push/PR (Maven build + JavaFX/backend modules)
 
 </td>
 <td width="50%">
@@ -98,8 +94,6 @@
 
 <div align="center">
 
-<!-- Add your screenshots here -->
-> 💡 **Tip:** Add screenshots of your application to the `docs/screenshots/` folder
 
 | Login Screen | Dashboard | Group Detail |
 |:---:|:---:|:---:|
@@ -460,25 +454,11 @@ mvn -pl backend test
 mvn -pl backend test jacoco:report
 ```
 
----
-
-## 🗺️ Roadmap
-
-- [ ] 🐳 Docker containerization
-- [ ] 🔄 OAuth2 social login (Google)
-- [ ] 📱 Mobile-responsive web client
-- [ ] 🔔 Push notifications
-- [ ] 📧 Email notifications
-- [ ] 🌍 Internationalization (i18n)
-- [ ] 🧪 CI/CD pipeline
-
----
-
 ## 👨‍💻 Author
 
 <div align="center">
 
-**Dmitrij Mitrofanov**
+**Dmitrii Savin**
 
 [![GitHub](https://img.shields.io/badge/GitHub-dmitthedazed-181717?style=for-the-badge&logo=github)](https://github.com/dmitthedazed)
 
