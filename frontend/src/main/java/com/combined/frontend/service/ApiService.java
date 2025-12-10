@@ -31,11 +31,21 @@ import java.util.List;
 
 public class ApiService {
 
-    public static final String BASE_URL = "http://localhost:8080/api";
+    private static final String DEFAULT_BASE_URL = "http://localhost:8080/api";
+    // Allow overriding via system property/API_BASE_URL to hit demo (e.g., http://localhost:8081/api)
+    private String baseUrl = System.getProperty("API_BASE_URL", DEFAULT_BASE_URL);
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     private String token;
     private Long currentUserId; // Store the ID of the currently logged-in user
+    public void setBaseUrl(String baseUrl) {
+        if (baseUrl != null && !baseUrl.isBlank()) {
+            this.baseUrl = baseUrl;
+        }
+    }
+    public String getBaseUrl() {
+        return baseUrl;
+    }
 
     public void setTokenAndUserId(String token, Long userId) {
         this.token = token;
@@ -58,7 +68,7 @@ public class ApiService {
         String requestBody = objectMapper.writeValueAsString(authRequest);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/auth/login"))
+                .uri(URI.create(baseUrl + "/auth/login"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
@@ -80,7 +90,7 @@ public class ApiService {
         String requestBody = objectMapper.writeValueAsString(userDto);
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/auth/register"))
+                .uri(URI.create(baseUrl + "/auth/register"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody))
                 .build();
@@ -499,7 +509,7 @@ public class ApiService {
         bodyParts.add(java.net.http.HttpRequest.BodyPublishers.ofString("\r\n--" + boundary + "--\r\n"));
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + "/resources/upload"))
+                .uri(URI.create(baseUrl + "/resources/upload"))
                 .header("Authorization", "Bearer " + token)
                 .header("Content-Type", "multipart/form-data; boundary=" + boundary)
                 .POST(java.net.http.HttpRequest.BodyPublishers.concat(bodyParts.toArray(new java.net.http.HttpRequest.BodyPublisher[0])))
@@ -564,7 +574,7 @@ public class ApiService {
             throw new IllegalStateException("Authentication token is missing.");
         }
         return HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + path))
+                .uri(URI.create(baseUrl + path))
                 .header("Authorization", "Bearer " + token)
                 .GET()
                 .build();
@@ -575,7 +585,7 @@ public class ApiService {
             throw new IllegalStateException("Authentication token is missing.");
         }
         return HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + path))
+                .uri(URI.create(baseUrl + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + token)
                 .POST(HttpRequest.BodyPublishers.ofString(body))
@@ -587,7 +597,7 @@ public class ApiService {
             throw new IllegalStateException("Authentication token is missing.");
         }
         return HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + path))
+                .uri(URI.create(baseUrl + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + token)
                 .PUT(HttpRequest.BodyPublishers.ofString(body))
@@ -599,7 +609,7 @@ public class ApiService {
             throw new IllegalStateException("Authentication token is missing.");
         }
         return HttpRequest.newBuilder()
-                .uri(URI.create(BASE_URL + path))
+                .uri(URI.create(baseUrl + path))
                 .header("Authorization", "Bearer " + token)
                 .DELETE()
                 .build();

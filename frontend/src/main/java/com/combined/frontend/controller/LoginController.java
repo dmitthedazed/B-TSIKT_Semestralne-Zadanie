@@ -30,6 +30,8 @@ public class LoginController {
     private PasswordField passwordField;
 
     private final ApiService apiService = new ApiService();
+    private static final String DEFAULT_API = System.getProperty("API_BASE_URL", "http://localhost:8080/api");
+    private static final String DEMO_API = "http://localhost:8081/api";
 
     private AuthViewController authViewController;
 
@@ -42,6 +44,7 @@ public class LoginController {
         String email = emailField.getText();
         String password = passwordField.getText();
 
+        apiService.setBaseUrl(DEFAULT_API);
         performLogin(email, password);
     }
 
@@ -55,6 +58,7 @@ public class LoginController {
         emailField.setText(email);
         passwordField.setText(password);
 
+        apiService.setBaseUrl(DEFAULT_API);
         performLogin(email, password);
     }
 
@@ -70,10 +74,11 @@ public class LoginController {
     @FXML
     private void handleTryDemo() {
         // Demo account (fake data) — adjust credentials if your backend provides a dedicated demo user
-        String email = "occaecat";
-        String password = "REDACTED";
+        String email = "demo@example.com";
+        String password = "demo123";
         emailField.setText(email);
         passwordField.setText(password);
+        apiService.setBaseUrl(DEMO_API);
         performLogin(email, password);
     }
 

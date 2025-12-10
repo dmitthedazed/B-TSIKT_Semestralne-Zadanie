@@ -308,7 +308,7 @@ public class MembersController implements BaseController {
                 }
                 applyingRole = false;
                 if (isCreator) {
-                    roleCombo.setPromptText("CREATOR (locked)");
+                    roleCombo.setPromptText("CREATOR");
                 }
                 roleCombo.setDisable(!actorCanManageThisRow);
                 removeButton.setDisable(!actorCanManageThisRow);

@@ -25,3 +25,5 @@ Thumbs.db
 log_back.txt
 log_front.txt
 ERRORS.md
+backend/demo-db.mv.db
+backend/demo-db.trace.db
