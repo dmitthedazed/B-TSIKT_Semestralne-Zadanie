@@ -1,13 +1,18 @@
 package com.combined.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.LocalDateTime;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ResourceDto {
     private Long id;
     private Long groupId;
     private String title;
     private String type; // e.g., "LINK", "FILE"
     private String pathOrUrl;
+    private String fileExtension;
+    private String description;
     private Long uploadedById;
     private String uploadedByName;
     private LocalDateTime uploadedAt;
@@ -15,12 +20,23 @@ public class ResourceDto {
     public ResourceDto() {
     }
 
-    public ResourceDto(Long id, Long groupId, String title, String type, String pathOrUrl, Long uploadedById, String uploadedByName, LocalDateTime uploadedAt) {
+    public ResourceDto(Long id,
+                       Long groupId,
+                       String title,
+                       String type,
+                       String pathOrUrl,
+                       String fileExtension,
+                       String description,
+                       Long uploadedById,
+                       String uploadedByName,
+                       LocalDateTime uploadedAt) {
         this.id = id;
         this.groupId = groupId;
         this.title = title;
         this.type = type;
         this.pathOrUrl = pathOrUrl;
+        this.fileExtension = fileExtension;
+        this.description = description;
         this.uploadedById = uploadedById;
         this.uploadedByName = uploadedByName;
         this.uploadedAt = uploadedAt;
@@ -65,6 +81,22 @@ public class ResourceDto {
 
     public void setPathOrUrl(String pathOrUrl) {
         this.pathOrUrl = pathOrUrl;
+    }
+
+    public String getFileExtension() {
+        return fileExtension;
+    }
+
+    public void setFileExtension(String fileExtension) {
+        this.fileExtension = fileExtension;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Long getUploadedById() {

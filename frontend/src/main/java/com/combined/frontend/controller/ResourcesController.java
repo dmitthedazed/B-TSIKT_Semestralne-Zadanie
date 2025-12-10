@@ -3,6 +3,7 @@ package com.combined.frontend.controller;
 import com.combined.backend.dto.GroupDto;
 import com.combined.backend.dto.ResourceDto;
 import com.combined.frontend.service.ApiService;
+import com.combined.frontend.dto.MemberWithRoleDto;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,6 +12,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox; // New import
+import java.awt.Desktop;
+import java.net.URI;
+import java.nio.file.Paths;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,17 +26,20 @@ public class ResourcesController implements BaseController {
     @FXML private TableColumn<ResourceDto, Long> idColumn;
     @FXML private TableColumn<ResourceDto, String> titleColumn;
     @FXML private TableColumn<ResourceDto, String> urlColumn;
-    @FXML private TableColumn<ResourceDto, String> typeColumn; // New column
+    @FXML private TableColumn<ResourceDto, String> typeColumn; // Will show extension for files, LINK for links
+    @FXML private TableColumn<ResourceDto, String> descriptionColumn;
     @FXML private TableColumn<ResourceDto, String> uploadedByColumn; // New column
     @FXML private TableColumn<ResourceDto, Void> actionColumn; // For Edit/Delete buttons
 
     @FXML private Label statusLabel;
+    @FXML private Button createResourceButton;
 
     private ApiService apiService;
     private Long currentUserId;
     private String currentNickname;
     private MainController mainController;
     private GroupDto currentlySelectedGroup;
+    private String currentRole = "MEMBER"; // CREATOR/ADMIN/MEMBER
 
     private final ObservableList<ResourceDto> resourcesData = FXCollections.observableArrayList();
 
@@ -55,7 +62,7 @@ public class ResourcesController implements BaseController {
     public void setCurrentlySelectedGroup(GroupDto group) {
         this.currentlySelectedGroup = group;
         if (group != null) {
-            loadResourcesForGroup(group.getId());
+            determineRoleAndLoad(group);
         } else {
             resourcesData.clear();
             statusLabel.setText("No group selected.");
@@ -67,7 +74,16 @@ public class ResourcesController implements BaseController {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
         urlColumn.setCellValueFactory(new PropertyValueFactory<>("pathOrUrl"));
-        typeColumn.setCellValueFactory(new PropertyValueFactory<>("type"));
+        typeColumn.setCellValueFactory(param -> {
+            ResourceDto r = param.getValue();
+            if (r == null) return null;
+            String ext = (r.getFileExtension() != null && !r.getFileExtension().isBlank()) ? r.getFileExtension() : null;
+            String type = (r.getType() != null && r.getType().equalsIgnoreCase("FILE"))
+                    ? (ext != null ? ext : "FILE")
+                    : "LINK";
+            return new javafx.beans.property.SimpleStringProperty(type);
+        });
+        descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         uploadedByColumn.setCellValueFactory(new PropertyValueFactory<>("uploadedByName"));
 
         resourcesTable.setItems(resourcesData);
@@ -78,12 +94,17 @@ public class ResourcesController implements BaseController {
 
     private void addActionButtonToTable() {
         actionColumn.setCellFactory(param -> new TableCell<ResourceDto, Void>() {
+            private final Button openButton = new Button();
             private final Button editButton = new Button("Edit");
             private final Button deleteButton = new Button("Delete");
-            private final HBox pane = new HBox(editButton, deleteButton);
+            private final HBox pane = new HBox(openButton, editButton, deleteButton);
 
             {
                 pane.setSpacing(5);
+                openButton.setOnAction(event -> {
+                    ResourceDto resource = getTableView().getItems().get(getIndex());
+                    handleOpenOrDownload(resource);
+                });
                 editButton.setOnAction(event -> {
                     ResourceDto resource = getTableView().getItems().get(getIndex());
                     handleEditResource(resource);
@@ -100,6 +121,13 @@ public class ResourcesController implements BaseController {
                 if (empty) {
                     setGraphic(null);
                 } else {
+                    ResourceDto resource = getTableView().getItems().get(getIndex());
+                    boolean isFile = resource != null && resource.getType() != null && resource.getType().equalsIgnoreCase("FILE");
+                    openButton.setText(isFile ? "Download" : "Open Link");
+                    openButton.setDisable(resource == null || resource.getPathOrUrl() == null || resource.getPathOrUrl().isBlank());
+                    boolean canModify = canModifyResource(resource);
+                    editButton.setDisable(!canModify);
+                    deleteButton.setDisable(!canModify);
                     setGraphic(pane);
                 }
             }
@@ -119,6 +147,10 @@ public class ResourcesController implements BaseController {
     private void onCreateResourceClick() {
         if (currentlySelectedGroup == null) {
             showAlert(Alert.AlertType.WARNING, "Create Resource", "Please select a group first to create a resource.");
+            return;
+        }
+        if (!canCreate()) {
+            showAlert(Alert.AlertType.WARNING, "Permission", "You cannot create resources in this group.");
             return;
         }
 
@@ -149,6 +181,10 @@ public class ResourcesController implements BaseController {
     }
 
     private void handleEditResource(ResourceDto resource) {
+        if (!canModifyResource(resource)) {
+            showAlert(Alert.AlertType.WARNING, "Permission", "You cannot edit this resource.");
+            return;
+        }
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/create-resource-dialog.fxml")); // Re-use create dialog for edit
             DialogPane dialogPane = loader.load();
@@ -177,6 +213,10 @@ public class ResourcesController implements BaseController {
     }
 
     private void handleDeleteResource(ResourceDto resource) {
+        if (!canModifyResource(resource)) {
+            showAlert(Alert.AlertType.WARNING, "Permission", "You cannot delete this resource.");
+            return;
+        }
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("Confirm Delete");
         confirmAlert.setHeaderText("Delete Resource: " + resource.getTitle());
@@ -197,6 +237,25 @@ public class ResourcesController implements BaseController {
                     });
                 }
             }).start();
+        }
+    }
+
+    private void handleOpenOrDownload(ResourceDto resource) {
+        if (resource == null || resource.getPathOrUrl() == null || resource.getPathOrUrl().isBlank()) return;
+        String pathOrUrl = resource.getPathOrUrl();
+        try {
+            if (resource.getType() != null && resource.getType().equalsIgnoreCase("FILE")) {
+                // Download via API (adds auth header) then open locally
+                String suggested = resource.getFileExtension() != null && !resource.getFileExtension().isBlank()
+                        ? "file." + resource.getFileExtension()
+                        : Paths.get(pathOrUrl).getFileName().toString();
+                var temp = apiService.downloadResourceToTemp(resource.getId(), suggested);
+                Desktop.getDesktop().open(temp.toFile());
+            } else {
+                Desktop.getDesktop().browse(new URI(pathOrUrl));
+            }
+        } catch (Exception ex) {
+            showAlert(Alert.AlertType.ERROR, "Open/Download", "Cannot open resource: " + ex.getMessage());
         }
     }
 
@@ -240,5 +299,53 @@ public class ResourcesController implements BaseController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void determineRoleAndLoad(GroupDto group) {
+        this.currentlySelectedGroup = group;
+        this.currentRole = "MEMBER";
+        if (group.getCreatedById() != null && group.getCreatedById().equals(currentUserId)) {
+            this.currentRole = "CREATOR";
+            updateCreateButton();
+            loadResourcesForGroup(group.getId());
+            return;
+        }
+        new Thread(() -> {
+            try {
+                List<MemberWithRoleDto> members = apiService.getGroupMembers(group.getId());
+                String role = members.stream()
+                        .filter(m -> m.getUserId().equals(currentUserId))
+                        .map(MemberWithRoleDto::getRole)
+                        .map(Enum::name)
+                        .findFirst()
+                        .orElse("MEMBER");
+                this.currentRole = role;
+                Platform.runLater(() -> {
+                    updateCreateButton();
+                    loadResourcesForGroup(group.getId());
+                });
+            } catch (Exception e) {
+                Platform.runLater(() -> {
+                    statusLabel.setStyle("-fx-text-fill: red;");
+                    statusLabel.setText("Error determining role: " + e.getMessage());
+                });
+            }
+        }).start();
+    }
+
+    private boolean canCreate() {
+        return "CREATOR".equals(currentRole) || "ADMIN".equalsIgnoreCase(currentRole);
+    }
+
+    private boolean canModifyResource(ResourceDto resource) {
+        if (resource == null) return false;
+        if (canCreate()) return true; // creator/admin
+        return resource.getUploadedById() != null && resource.getUploadedById().equals(currentUserId);
+    }
+
+    private void updateCreateButton() {
+        if (createResourceButton != null) {
+            createResourceButton.setDisable(!canCreate());
+        }
     }
 }

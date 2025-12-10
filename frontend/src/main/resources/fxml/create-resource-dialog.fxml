@@ -28,6 +28,9 @@
                     <TextField fx:id="filePathField" promptText="No file selected" editable="false" HBox.hgrow="ALWAYS"/>
                     <Button text="Browse..." onAction="#handleBrowseFile"/>
                 </HBox>
+
+                <Label text="Description:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextArea fx:id="descriptionField" promptText="Optional description" prefRowCount="2" wrapText="true" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
             </GridPane>
             <Label fx:id="errorMessageLabel" textFill="red" wrapText="true"/>
         </VBox>

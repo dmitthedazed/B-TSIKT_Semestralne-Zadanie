@@ -30,6 +30,16 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getTasksByGroupId(groupId));
     }
 
+    @GetMapping("/my")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<TaskDto>> getTasksForUser(@RequestParam Long userId,
+                                                         @RequestParam(required = false) String status,
+                                                         @RequestParam(required = false) Long groupId,
+                                                         @RequestParam(required = false, defaultValue = "ALL") String participation,
+                                                         @RequestParam(required = false) String query) {
+        return ResponseEntity.ok(taskService.getTasksForUser(userId, status, groupId, participation, query));
+    }
+
     @PutMapping("/{taskId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TaskDto> updateTask(@PathVariable Long taskId, @RequestBody TaskDto taskDto) {

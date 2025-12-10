@@ -20,12 +20,15 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 
 public class ApiService {
 
-    private static final String BASE_URL = "http://localhost:8080/api";
+    public static final String BASE_URL = "http://localhost:8080/api";
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     private String token;
@@ -103,6 +106,16 @@ public class ApiService {
             return objectMapper.readValue(response.body(), new TypeReference<List<GroupDto>>() {});
         } else {
             throw new RuntimeException("Failed to get my groups: " + response.body());
+        }
+    }
+
+    public GroupDto getGroupById(Long groupId) throws Exception {
+        HttpRequest request = authenticatedGetRequest("/groups/" + groupId);
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), GroupDto.class);
+        } else {
+            throw new RuntimeException("Failed to load group: " + response.body());
         }
     }
 
@@ -220,6 +233,38 @@ public class ApiService {
         }
     }
 
+    public List<TaskDto> getMyTasks(Long userId,
+                                    String status,
+                                    Long groupId,
+                                    String participation,
+                                    String query) throws Exception {
+        StringBuilder path = new StringBuilder("/tasks/my?userId=" + userId);
+        if (status != null && !status.isBlank()) {
+            path.append("&status=").append(encodeValue(status));
+        }
+        if (groupId != null) {
+            path.append("&groupId=").append(groupId);
+        }
+        if (participation != null && !participation.isBlank()) {
+            path.append("&participation=").append(encodeValue(participation));
+        }
+        if (query != null && !query.isBlank()) {
+            path.append("&query=").append(encodeValue(query));
+        }
+
+        HttpRequest request = authenticatedGetRequest(path.toString());
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println("ApiService (getMyTasks): Received status code: " + response.statusCode());
+        System.out.println("ApiService (getMyTasks): Received response body: " + response.body());
+
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), new TypeReference<List<TaskDto>>() {});
+        } else {
+            throw new RuntimeException("Failed to fetch my tasks: " + response.body());
+        }
+    }
+
     public TaskDto createTask(TaskDto taskDto) throws Exception {
         if (currentUserId == null) {
             throw new IllegalStateException("User not logged in. Cannot create task.");
@@ -334,7 +379,7 @@ public class ApiService {
         if (currentUserId == null) {
             throw new IllegalStateException("User not logged in. Cannot delete resource.");
         }
-        HttpRequest request = authenticatedDeleteRequest("/resources/" + resourceId);
+        HttpRequest request = authenticatedDeleteRequest("/resources/" + resourceId + "?requesterId=" + currentUserId);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         System.out.println("ApiService (deleteResource): Received status code: " + response.statusCode());
@@ -357,6 +402,76 @@ public class ApiService {
         } else {
             throw new RuntimeException("Failed to get group members: " + response.body());
         }
+    }
+
+    /**
+     * Upload a file as multipart to /api/resources/upload
+     */
+    public ResourceDto uploadFileResource(Long groupId, String title, String description, String filePath) throws Exception {
+        if (currentUserId == null) {
+            throw new IllegalStateException("User not logged in. Cannot upload resource.");
+        }
+        var boundary = "----Boundary" + System.currentTimeMillis();
+        var byteArrays = new java.util.ArrayList<java.lang.String>();
+        // helper to add simple form field
+        java.util.function.BiConsumer<String, String> addField = (name, value) -> {
+            if (value == null) value = "";
+            byteArrays.add("--" + boundary + "\r\n");
+            byteArrays.add("Content-Disposition: form-data; name=\"" + name + "\"\r\n\r\n");
+            byteArrays.add(value + "\r\n");
+        };
+        addField.accept("groupId", groupId.toString());
+        addField.accept("uploadedById", currentUserId.toString());
+        if (title != null) addField.accept("title", title);
+        if (description != null) addField.accept("description", description);
+
+        java.nio.file.Path path = java.nio.file.Paths.get(filePath);
+        byte[] fileBytes = java.nio.file.Files.readAllBytes(path);
+        String fileName = path.getFileName().toString();
+        byteArrays.add("--" + boundary + "\r\n");
+        byteArrays.add("Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"\r\n");
+        byteArrays.add("Content-Type: application/octet-stream\r\n\r\n");
+        var bodyParts = new java.util.ArrayList<java.net.http.HttpRequest.BodyPublisher>();
+        byteArrays.forEach(s -> bodyParts.add(java.net.http.HttpRequest.BodyPublishers.ofString(s)));
+        bodyParts.add(java.net.http.HttpRequest.BodyPublishers.ofByteArray(fileBytes));
+        bodyParts.add(java.net.http.HttpRequest.BodyPublishers.ofString("\r\n--" + boundary + "--\r\n"));
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/resources/upload"))
+                .header("Authorization", "Bearer " + token)
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .POST(java.net.http.HttpRequest.BodyPublishers.concat(bodyParts.toArray(new java.net.http.HttpRequest.BodyPublisher[0])))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println("ApiService (uploadFileResource): status " + response.statusCode());
+        System.out.println("ApiService (uploadFileResource): body " + response.body());
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), ResourceDto.class);
+        } else {
+            throw new RuntimeException("Failed to upload resource: " + response.body());
+        }
+    }
+
+    /**
+     * Download a protected resource (FILE) using auth header and save to temp file.
+     */
+    public Path downloadResourceToTemp(Long resourceId, String suggestedName) throws Exception {
+        HttpRequest request = authenticatedGetRequest("/resources/" + resourceId + "/download");
+        HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+        System.out.println("ApiService (downloadResource): status " + response.statusCode());
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Failed to download file: " + response.statusCode());
+        }
+        String prefix = "resource_" + resourceId + "_";
+        String suffix = "";
+        if (suggestedName != null && suggestedName.contains(".")) {
+            int idx = suggestedName.lastIndexOf('.');
+            suffix = suggestedName.substring(idx);
+        }
+        Path tempFile = Files.createTempFile(prefix, suffix.isEmpty() ? ".bin" : suffix);
+        Files.write(tempFile, response.body());
+        return tempFile;
     }
 
     public GroupStatsDto getGroupStats(Long groupId) throws Exception {
@@ -417,5 +532,9 @@ public class ApiService {
                 .header("Authorization", "Bearer " + token)
                 .DELETE()
                 .build();
+    }
+
+    private String encodeValue(String value) {
+        return URLEncoder.encode(value, java.nio.charset.StandardCharsets.UTF_8);
     }
 }

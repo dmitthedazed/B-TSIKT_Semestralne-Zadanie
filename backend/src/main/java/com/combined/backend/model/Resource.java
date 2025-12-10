@@ -35,6 +35,12 @@ public class Resource {
     @Column(name = "path_or_url", nullable = false)
     private String pathOrUrl;
 
+    @Column(name = "file_extension")
+    private String fileExtension;
+
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "uploaded_at", nullable = false)
     private LocalDateTime uploadedAt;
 
@@ -88,6 +94,22 @@ public class Resource {
 
     public void setPathOrUrl(String pathOrUrl) {
         this.pathOrUrl = pathOrUrl;
+    }
+
+    public String getFileExtension() {
+        return fileExtension;
+    }
+
+    public void setFileExtension(String fileExtension) {
+        this.fileExtension = fileExtension;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public LocalDateTime getUploadedAt() {

@@ -79,7 +79,7 @@ public class MainController {
             fxmlPath = "/fxml/groups-view.fxml";
             title = "My Groups";
         } else if (sourceButton == tasksAllButton) {
-            fxmlPath = "/fxml/tasks-view.fxml"; // This will show all tasks or tasks for selected group
+            fxmlPath = "/fxml/tasks-global-view.fxml"; // Global tasks across all groups
             title = "Tasks";
         } else if (sourceButton == statisticsButton) {
             fxmlPath = "/fxml/statistics-view.fxml";

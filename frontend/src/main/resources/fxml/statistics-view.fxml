@@ -11,13 +11,28 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.combined.frontend.controller.StatsController"
-      alignment="CENTER" spacing="12">
+      alignment="CENTER" spacing="16">
 
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
 
     <Label text="Group Statistics" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+    <HBox spacing="12" alignment="CENTER">
+        <VBox alignment="CENTER" spacing="4" style="-fx-background-color: #f2f6ff; -fx-padding: 10; -fx-border-color: #d8e2ff; -fx-border-radius: 6; -fx-background-radius: 6;">
+            <Label text="Total Tasks" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+            <Label fx:id="totalTasksLabel" text="0" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+        </VBox>
+        <VBox alignment="CENTER" spacing="4" style="-fx-background-color: #fff7ed; -fx-padding: 10; -fx-border-color: #ffd7b5; -fx-border-radius: 6; -fx-background-radius: 6;">
+            <Label text="Open / In Progress" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+            <Label fx:id="openTasksLabel" text="0" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+        </VBox>
+        <VBox alignment="CENTER" spacing="4" style="-fx-background-color: #ecfdf3; -fx-padding: 10; -fx-border-color: #c7f2d7; -fx-border-radius: 6; -fx-background-radius: 6;">
+            <Label text="Completed" style="-fx-font-size: 12px; -fx-text-fill: #555;"/>
+            <Label fx:id="doneTasksLabel" text="0" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+        </VBox>
+    </HBox>
 
     <HBox spacing="20" alignment="CENTER">
         <PieChart fx:id="taskStatusPieChart" prefWidth="320" prefHeight="260"/>

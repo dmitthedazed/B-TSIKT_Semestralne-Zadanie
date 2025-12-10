@@ -4,16 +4,20 @@ import com.combined.backend.dto.ResourceDto;
 import com.combined.frontend.service.ApiService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import javafx.event.ActionEvent;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class CreateResourceController {
 
     @FXML private TextField titleField;
     @FXML private TextField urlField;
     @FXML private TextField filePathField;
+    @FXML private TextArea descriptionField;
     @FXML private Label errorMessageLabel;
 
     private ApiService apiService;
@@ -35,6 +39,7 @@ public class CreateResourceController {
         if (resource != null) {
             titleField.setText(resource.getTitle());
             urlField.setText(resource.getPathOrUrl());
+            descriptionField.setText(resource.getDescription());
             if ("FILE".equalsIgnoreCase(resource.getType())) {
                 filePathField.setText(resource.getPathOrUrl());
                 filePath = resource.getPathOrUrl();
@@ -74,6 +79,7 @@ public class CreateResourceController {
     private boolean saveResource(Long resourceId) {
         String title = titleField.getText();
         String url = urlField.getText();
+        String description = descriptionField.getText();
 
         if (title == null || title.trim().isEmpty()) {
             errorMessageLabel.setText("Resource title cannot be empty.");
@@ -96,19 +102,23 @@ public class CreateResourceController {
             ResourceDto resourceToSave = new ResourceDto();
             resourceToSave.setGroupId(groupId);
             resourceToSave.setTitle(title);
+            resourceToSave.setDescription(description);
             // Prefer file if chosen; otherwise treat as link
             if (hasFile) {
-                resourceToSave.setPathOrUrl(filePath);
-                resourceToSave.setType("FILE");
+                if (resourceId != null) {
+                    errorMessageLabel.setText("Editing file uploads is not supported. Create a new resource or edit as link.");
+                    return false;
+                }
+                // Upload file via multipart
+                newResource = apiService.uploadFileResource(groupId, title, description, filePath);
             } else {
                 resourceToSave.setPathOrUrl(url);
                 resourceToSave.setType("LINK");
-            }
-
-            if (resourceId == null) { // Create
-                newResource = apiService.createResource(resourceToSave);
-            } else { // Update
-                newResource = apiService.updateResource(resourceId, resourceToSave);
+                if (resourceId == null) { // Create
+                    newResource = apiService.createResource(resourceToSave);
+                } else { // Update
+                    newResource = apiService.updateResource(resourceId, resourceToSave);
+                }
             }
             return true;
         } catch (Exception e) {

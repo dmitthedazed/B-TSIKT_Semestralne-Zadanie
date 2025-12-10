@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public class TaskDto {
     private Long id;
     private Long groupId;
+    private String groupName;
     private String title;
     private String description;
     private String status;
@@ -18,9 +19,10 @@ public class TaskDto {
     public TaskDto() {
     }
 
-    public TaskDto(Long id, Long groupId, String title, String description, String status, LocalDateTime deadline, Long createdById, String createdByName, Long assignedToId, String assignedToName, LocalDateTime createdAt) {
+    public TaskDto(Long id, Long groupId, String groupName, String title, String description, String status, LocalDateTime deadline, Long createdById, String createdByName, Long assignedToId, String assignedToName, LocalDateTime createdAt) {
         this.id = id;
         this.groupId = groupId;
+        this.groupName = groupName;
         this.title = title;
         this.description = description;
         this.status = status;
@@ -47,6 +49,14 @@ public class TaskDto {
 
     public void setGroupId(Long groupId) {
         this.groupId = groupId;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public String getTitle() {

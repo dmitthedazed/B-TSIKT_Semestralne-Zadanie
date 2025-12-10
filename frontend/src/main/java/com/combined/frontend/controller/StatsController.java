@@ -12,6 +12,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Label;
+import javafx.scene.paint.Color;
 
 import java.util.Map;
 
@@ -20,6 +21,9 @@ public class StatsController implements BaseController {
     @FXML private PieChart taskStatusPieChart;
     @FXML private BarChart<String, Number> tasksPerMemberBarChart;
     @FXML private Label statusLabel;
+    @FXML private Label totalTasksLabel;
+    @FXML private Label openTasksLabel;
+    @FXML private Label doneTasksLabel;
 
     private ApiService apiService;
     private Long currentUserId;
@@ -73,6 +77,7 @@ public class StatsController implements BaseController {
                 Platform.runLater(() -> {
                     updateTaskStatusPieChart(stats.getTaskStatusCounts());
                     updateTasksPerMemberBarChart(stats.getTasksPerMember());
+                    updateSummary(stats.getTaskStatusCounts());
                     statusLabel.setText("Group statistics loaded.");
                 });
             } catch (Exception e) {
@@ -97,5 +102,17 @@ public class StatsController implements BaseController {
             series.getData().add(new XYChart.Data<>(member, count));
         });
         tasksPerMemberBarChart.getData().add(series);
+    }
+
+    private void updateSummary(Map<String, Long> statusCounts) {
+        long total = statusCounts.values().stream().mapToLong(Long::longValue).sum();
+        long done = statusCounts.entrySet().stream()
+                .filter(e -> e.getKey().equalsIgnoreCase("DONE") || e.getKey().equalsIgnoreCase("COMPLETED"))
+                .mapToLong(Map.Entry::getValue)
+                .sum();
+        long open = total - done;
+        totalTasksLabel.setText(String.valueOf(total));
+        openTasksLabel.setText(String.valueOf(open));
+        doneTasksLabel.setText(String.valueOf(done));
     }
 }
