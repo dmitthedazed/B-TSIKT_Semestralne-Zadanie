@@ -269,7 +269,7 @@ public class ApiService {
     }
 
     public List<ActivityLogDto> getUserActivityLogs(Long userId, Integer days) throws Exception {
-        String path = "/activity/user/" + userId;
+        String path = "/activity-logs/user/" + userId;
         if (days != null) {
             path += "?days=" + days;
         }
