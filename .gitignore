@@ -1,0 +1,24 @@
+### IDE
+.idea/
+.vscode/
+*.iml
+
+### Build outputs
+target/
+*/target/
+*.class
+*.jar
+
+### Logs & temp
+*.log
+*.tmp
+*.swp
+
+### Local data/uploads
+backend/combined_study.db
+backend/uploads/
+frontend/uploads/
+
+### OS files
+.DS_Store
+Thumbs.db
