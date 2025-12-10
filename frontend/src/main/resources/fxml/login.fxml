@@ -3,6 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
@@ -30,6 +32,18 @@
                 onAction="#handleLogin"
                 maxWidth="Infinity"
                 style="-fx-font-size: 15px; -fx-padding: 12; -fx-background-radius: 12;" />
+
+        <Button onAction="#handleGoogleLogin"
+                maxWidth="Infinity"
+                style="-fx-padding: 0; -fx-background-color: transparent; -fx-border-color: transparent;">
+            <graphic>
+                <ImageView fitWidth="220" preserveRatio="true" smooth="true">
+                    <image>
+                        <Image url="@/img/google-signin-light.png"/>
+                    </image>
+                </ImageView>
+            </graphic>
+        </Button>
 
         <VBox spacing="6" alignment="CENTER">
             <Label text="First time here?" style="-fx-text-fill: #444; -fx-font-size: 12px;" />

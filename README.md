@@ -1,83 +1,503 @@
-# Collaborative Study Platform (StudyHub)
+<div align="center">
 
-Semester project: JavaFX desktop client + Spring Boot backend for collaborative study groups. The system supports authentication, groups, memberships, tasks, materials, activity log, statistics, and realtime updates via WebSocket.
+# 📚 TaskBoard
 
-## Architecture (client–server)
-- **Client:** JavaFX (FXML), controllers use `ApiService` (HttpClient + JWT) and WebSocket notifications.
-- **Server:** Spring Boot 3, Spring Security (JWT), JPA/Hibernate, SQLite.
-- **Layers:** Controller → Service (business + access checks) → Repository (JPA) → DB. DTOs isolate API from entities.
-- **Realtime:** WebSocket notifications for task create/update/delete, material add, member join/role change.
+### Collaborative Task Platform
 
-## Data model & invariants
-```mermaid
-erDiagram
-  USERS { int user_id PK; string nickname; string email UNIQUE; string password_hash; datetime created_at }
-  GROUPS { int group_id PK; string name; string description; int created_by FK->USERS; datetime created_at }
-  MEMBERSHIPS { int id PK; int user_id FK->USERS; int group_id FK->GROUPS; string role {CREATOR,ADMIN,MEMBER}; datetime joined_at }
-  TASKS { int task_id PK; int group_id FK->GROUPS; int created_by FK->USERS; int assigned_to FK->USERS NULL; string title; string description; string status {OPEN,IN_PROGRESS,DONE}; datetime deadline NULL; datetime created_at }
-  RESOURCES { int resource_id PK; int group_id FK->GROUPS; int uploaded_by FK->USERS; string title; string type {FILE,LINK}; string path_or_url; string file_extension NULL; string description NULL; datetime uploaded_at }
-  ACTIVITY_LOG { int id PK; int user_id FK->USERS; int group_id FK->GROUPS NULL; int task_id FK->TASKS NULL; string activity_type; string description; datetime timestamp }
-```
-**Invariants / rules**
-- `USERS.email` unique; password stored as hash; JWT used for auth; controllers take user from `@AuthenticationPrincipal` only (no userId spoofing).
-- Every group has exactly one **creator** (`created_by`), persisted also as membership with role `CREATOR`.
-- Membership role set: `CREATOR` (immutable), `ADMIN`, `MEMBER`. Only creator/admin can add/remove members or change roles; creator cannot be removed or demoted.
-- Tasks belong to a group; `assigned_to` optional. When a member is removed, their group tasks are unassigned.
-- Resources belong to a group; creator/admin can create/upload/edit/delete; member can view; uploader can edit/delete own.
-- Activity logs capture user/group context; group activity fetch requires membership/creator.
+*A modern JavaFX desktop client + Spring Boot backend for collaborative study groups*
 
-## REST API (main)
-- **Auth:** `POST /api/auth/login`, `POST /api/auth/register`
-- **Users:** `GET /api/users/me`, `PUT /api/users/me`, `POST /api/users/me/change-password`
-- **Groups:** `GET /api/groups/my`, `GET /api/groups`, `POST /api/groups`, `GET /api/groups/{id}`, `GET /api/groups/available`
-- **Memberships:** `POST /api/memberships/join/{groupId}`, `POST /api/memberships/leave/{groupId}`, `GET /api/memberships/group/{groupId}/members`, `POST /api/memberships/group/{groupId}/add-member`, `POST /api/memberships/group/{groupId}/add-member-by-email`, `PUT /api/memberships/group/{groupId}/update-role`, `DELETE /api/memberships/group/{groupId}/remove-member`
-- **Tasks:** `POST /api/tasks`, `GET /api/tasks/group/{id}`, `GET /api/tasks/my`, `PUT /api/tasks/{id}`, `DELETE /api/tasks/{id}`
-- **Resources:** `GET /api/resources/group/{id}`, `POST /api/resources`, `PUT /api/resources/{id}`, `DELETE /api/resources/{id}`, `POST /api/resources/upload`, `GET /api/resources/{id}/download`
-- **Stats / Activity:** `GET /api/group-stats/{groupId}`, `GET /api/activity-logs/user/me`, `GET /api/activity-logs/group/{groupId}`
+[![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?style=for-the-badge&logo=java&logoColor=white)](https://openjfx.io/)
+[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
-## WebSocket events (planned/used by UI)
-- Task created/updated/deleted
-- Task status change
-- Material added
-- Member joined/role changed
-- (hook points available for stats refresh)
+[Features](#-features) •
+[Screenshots](#-screenshots) •
+[Installation](#-installation) •
+[Usage](#-usage) •
+[API](#-api-reference) •
+[Architecture](#-architecture)
 
-## Screens (JavaFX)
-- Login / Register (tabs)
-- Dashboard shell with sidebar (Groups, Tasks, Statistics, Profile, Logout) and topbar
-- Groups: My Groups / All Groups
-- Group Detail: Overview, Tasks, Materials, Members, Stats
-- Tasks (global, all user-related tasks)
-- Statistics (global analytics)
-- Profile (name update, password change)
+</div>
 
-## Build & run
-```
-# backend
+---
+
+## ✨ Features
+
+<table>
+<tr>
+<td width="50%">
+
+### 👥 Group Collaboration
+- Create and manage study groups
+- Role-based access (Creator, Admin, Member)
+- Invite members by email
+- Real-time member activity
+
+</td>
+<td width="50%">
+
+### ✅ Task Management
+- Create, assign, and track tasks
+- Status tracking (Open → In Progress → Done)
+- Deadline management
+- Personal task dashboard
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 📁 Resource Sharing
+- Upload files and share links
+- Organized by study groups
+- Download and manage materials
+- File type support
+
+</td>
+<td width="50%">
+
+### 📊 Analytics & Statistics
+- Group activity statistics
+- Task completion charts
+- 90-day activity history
+- Visual progress tracking
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 🔐 Security
+- JWT-based authentication
+- Secure password hashing
+- Role-based permissions
+- Protected API endpoints
+- OAuth2 login with Google (configurable via GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET)
+
+### 🧪 CI
+- GitHub Actions workflow runs tests on push/PR (Maven build + JavaFX/backend modules)
+
+</td>
+<td width="50%">
+
+### ⚡ Real-time Updates
+- WebSocket notifications
+- Live task updates
+- Member activity alerts
+- Instant sync across clients
+
+</td>
+</tr>
+</table>
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+<!-- Add your screenshots here -->
+> 💡 **Tip:** Add screenshots of your application to the `docs/screenshots/` folder
+
+| Login Screen | Dashboard | Group Detail |
+|:---:|:---:|:---:|
+| ![Login](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) | ![Group](docs/screenshots/group.png) |
+
+| Tasks View | Statistics | Profile |
+|:---:|:---:|:---:|
+| ![Tasks](docs/screenshots/tasks.png) | ![Stats](docs/screenshots/stats.png) | ![Profile](docs/screenshots/profile.png) |
+
+</div>
+
+---
+
+## 🛠️ Tech Stack
+
+<div align="center">
+
+| Layer | Technology |
+|:---:|:---|
+| **Frontend** | JavaFX 21, FXML, CSS |
+| **Backend** | Spring Boot 3.3.1, Spring Security |
+| **Database** | SQLite (prod), H2 (demo) |
+| **Auth** | JWT (JSON Web Tokens) |
+| **Real-time** | WebSocket (STOMP) |
+| **Build** | Maven (multi-module) |
+
+</div>
+
+---
+
+## 📦 Installation
+
+### Prerequisites
+
+- ☕ **Java 21** or higher ([Download](https://adoptium.net/))
+- 📦 **Maven 3.8+** ([Download](https://maven.apache.org/download.cgi))
+- 💻 Git
+
+### Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie.git
+cd B-TSIKT_Semestralne-Zadanie
+
+# Build the project
+mvn clean install
+
+# Start the backend (Terminal 1)
 mvn -pl backend spring-boot:run
-# frontend
+
+# Start the frontend (Terminal 2)
 mvn -pl frontend javafx:run
 ```
-Requires Java 21+, Maven, SQLite DB file auto-created.
 
-### Demo mode (separate backend, seeded data)
-- Backend (in‑memory H2, port 8081): `cd backend && mvn spring-boot:run "-Dspring-boot.run.profiles=demo"`
-- Frontend pointed to demo API: run with `-DAPI_BASE_URL=http://localhost:8081/api` or click the “Try demo” button (auto-switches to demo base URL and fills `demo@example.com` / `demo123`).
-- Demo data: multiple seeded teachers, courses, students, tasks, resources, and 90 days of activity logs for stats.
+> 📝 **Note:** The SQLite database file is auto-created on first run.
 
-## Recent frontend improvements
-- Groups: table replaced by responsive cards (open/join buttons, owner, members/tasks badges, hover animation).
-- Tasks/Resources/Members: table views replaced with list-style cards for better readability.
-- Group detail: Overview tab now includes resources and stats; stats charts pulled into overview.
-- Auth: login errors show bottom toast; “Try demo” auto-targets the demo backend and fills demo creds.
-- UI polish: sidebar enlarged with icons; top bar greeting now time-based and uses first name.
+---
 
-## Security & access checks
-- JWT for all calls; controllers consume `@AuthenticationPrincipal`.
-- Membership/creator guard on tasks, resources, memberships, group stats, group activity logs.
-- Creator cannot be removed/demoted; CREATOR role cannot be assigned.
+## 🚀 Usage
 
-## Known gaps / TODO (for maximal score)
-- Add ER/architecture diagrams to docs (export mermaid if needed).
-- Add automated tests / CI, Docker packaging, and OAuth2 if required by bonus.
-- Reduce duplicate API calls on the JavaFX side; centralize 401/403 handling for all endpoints.
+### 🎮 Demo Mode
+
+Try the app instantly with pre-seeded data:
+
+```bash
+# Start demo backend (H2 in-memory, port 8081)
+cd backend
+mvn spring-boot:run "-Dspring-boot.run.profiles=demo"
+
+# Start frontend pointing to demo
+mvn -pl frontend javafx:run -DAPI_BASE_URL=http://localhost:8081/api
+```
+
+Or simply click **"Try Demo"** on the login screen!
+
+| Demo Credentials |  |
+|:---|:---|
+| 📧 Email | `demo@example.com` |
+| 🔑 Password | `demo123` |
+
+### Default Ports
+
+| Service | Port |
+|:---:|:---:|
+| Backend (Production) | `8080` |
+| Backend (Demo) | `8081` |
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        CLIENT (JavaFX)                       │
+├─────────────────────────────────────────────────────────────┤
+│  Controllers (FXML)  │  ApiService  │  WebSocket Client     │
+│         ↓            │      ↓       │         ↓             │
+│       Views          │  HTTP/JWT    │    STOMP Messages     │
+└──────────────────────┴──────────────┴───────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      SERVER (Spring Boot)                    │
+├─────────────────────────────────────────────────────────────┤
+│  REST Controllers  │  WebSocket Handler  │  Security Filter │
+│         ↓          │         ↓           │        ↓         │
+│     Services       │    Notification     │   JWT Validator  │
+│         ↓          │      Service        │                  │
+│   Repositories     │                     │                  │
+│         ↓          │                     │                  │
+│    JPA/Hibernate   │                     │                  │
+│         ↓          │                     │                  │
+│      SQLite        │                     │                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 📊 Data Model
+
+```mermaid
+erDiagram
+    USERS ||--o{ MEMBERSHIPS : has
+    USERS ||--o{ TASKS : creates
+    USERS ||--o{ RESOURCES : uploads
+    USERS ||--o{ ACTIVITY_LOG : generates
+    
+    GROUPS ||--o{ MEMBERSHIPS : contains
+    GROUPS ||--o{ TASKS : has
+    GROUPS ||--o{ RESOURCES : stores
+    GROUPS ||--o{ ACTIVITY_LOG : tracks
+    
+    USERS {
+        int user_id PK
+        string nickname
+        string email UK
+        string password_hash
+        datetime created_at
+    }
+    
+    GROUPS {
+        int group_id PK
+        string name
+        string description
+        int created_by FK
+        datetime created_at
+    }
+    
+    MEMBERSHIPS {
+        int id PK
+        int user_id FK
+        int group_id FK
+        enum role "CREATOR|ADMIN|MEMBER"
+        datetime joined_at
+    }
+    
+    TASKS {
+        int task_id PK
+        int group_id FK
+        int created_by FK
+        int assigned_to FK
+        string title
+        string description
+        enum status "OPEN|IN_PROGRESS|DONE"
+        datetime deadline
+        datetime created_at
+    }
+    
+    RESOURCES {
+        int resource_id PK
+        int group_id FK
+        int uploaded_by FK
+        string title
+        enum type "FILE|LINK"
+        string path_or_url
+        string file_extension
+        string description
+        datetime uploaded_at
+    }
+    
+    ACTIVITY_LOG {
+        int id PK
+        int user_id FK
+        int group_id FK
+        int task_id FK
+        string activity_type
+        string description
+        datetime timestamp
+    }
+```
+
+---
+
+## 📡 API Reference
+
+<details>
+<summary><b>🔐 Authentication</b></summary>
+
+| Method | Endpoint | Description |
+|:---:|:---|:---|
+| `POST` | `/api/auth/register` | Register new user |
+| `POST` | `/api/auth/login` | Login & get JWT |
+
+</details>
+
+<details>
+<summary><b>👤 Users</b></summary>
+
+| Method | Endpoint | Description |
+|:---:|:---|:---|
+| `GET` | `/api/users/me` | Get current user |
+| `PUT` | `/api/users/me` | Update profile |
+| `POST` | `/api/users/me/change-password` | Change password |
+
+</details>
+
+<details>
+<summary><b>👥 Groups</b></summary>
+
+| Method | Endpoint | Description |
+|:---:|:---|:---|
+| `GET` | `/api/groups` | List all groups |
+| `GET` | `/api/groups/my` | List my groups |
+| `GET` | `/api/groups/available` | List joinable groups |
+| `POST` | `/api/groups` | Create group |
+| `GET` | `/api/groups/{id}` | Get group details |
+
+</details>
+
+<details>
+<summary><b>🤝 Memberships</b></summary>
+
+| Method | Endpoint | Description |
+|:---:|:---|:---|
+| `POST` | `/api/memberships/join/{groupId}` | Join group |
+| `POST` | `/api/memberships/leave/{groupId}` | Leave group |
+| `GET` | `/api/memberships/group/{groupId}/members` | List members |
+| `POST` | `/api/memberships/group/{groupId}/add-member` | Add member |
+| `POST` | `/api/memberships/group/{groupId}/add-member-by-email` | Add by email |
+| `PUT` | `/api/memberships/group/{groupId}/update-role` | Change role |
+| `DELETE` | `/api/memberships/group/{groupId}/remove-member` | Remove member |
+
+</details>
+
+<details>
+<summary><b>✅ Tasks</b></summary>
+
+| Method | Endpoint | Description |
+|:---:|:---|:---|
+| `POST` | `/api/tasks` | Create task |
+| `GET` | `/api/tasks/group/{id}` | List group tasks |
+| `GET` | `/api/tasks/my` | List my tasks |
+| `PUT` | `/api/tasks/{id}` | Update task |
+| `DELETE` | `/api/tasks/{id}` | Delete task |
+
+</details>
+
+<details>
+<summary><b>📁 Resources</b></summary>
+
+| Method | Endpoint | Description |
+|:---:|:---|:---|
+| `GET` | `/api/resources/group/{id}` | List resources |
+| `POST` | `/api/resources` | Create resource (link) |
+| `POST` | `/api/resources/upload` | Upload file |
+| `PUT` | `/api/resources/{id}` | Update resource |
+| `DELETE` | `/api/resources/{id}` | Delete resource |
+| `GET` | `/api/resources/{id}/download` | Download file |
+
+</details>
+
+<details>
+<summary><b>📊 Statistics & Activity</b></summary>
+
+| Method | Endpoint | Description |
+|:---:|:---|:---|
+| `GET` | `/api/group-stats/{groupId}` | Group statistics |
+| `GET` | `/api/activity-logs/user/me` | My activity |
+| `GET` | `/api/activity-logs/group/{groupId}` | Group activity |
+
+</details>
+
+---
+
+## 🔌 WebSocket Events
+
+Real-time notifications via STOMP over WebSocket:
+
+| Event | Description |
+|:---|:---|
+| `task.created` | New task added |
+| `task.updated` | Task modified |
+| `task.deleted` | Task removed |
+| `task.status` | Status changed |
+| `resource.added` | New material uploaded |
+| `member.joined` | New member joined |
+| `member.role` | Role changed |
+
+---
+
+## 📁 Project Structure
+
+```
+📦 B-TSIKT_Semestralne-Zadanie
+├── 📂 backend/                    # Spring Boot backend
+│   ├── 📂 src/main/java/com/combined/backend/
+│   │   ├── 📂 config/             # Security, WebSocket config
+│   │   ├── 📂 controller/         # REST endpoints
+│   │   ├── 📂 dto/                # Data transfer objects
+│   │   ├── 📂 model/              # JPA entities
+│   │   ├── 📂 repository/         # Data access layer
+│   │   ├── 📂 service/            # Business logic
+│   │   └── 📄 BackendApplication.java
+│   └── 📂 src/main/resources/
+│       ├── 📄 application.properties
+│       └── 📄 application-demo.properties
+├── 📂 frontend/                   # JavaFX client
+│   ├── 📂 src/main/java/          # Controllers & services
+│   └── 📂 src/main/resources/
+│       ├── 📂 fxml/               # UI layouts
+│       ├── 📂 css/                # Stylesheets
+│       └── 📂 img/                # Images
+├── 📄 pom.xml                     # Parent POM
+└── 📄 README.md
+```
+
+---
+
+## 🔒 Security
+
+| Feature | Implementation |
+|:---|:---|
+| **Authentication** | JWT tokens with configurable expiration |
+| **Password Storage** | BCrypt hashing |
+| **Authorization** | Role-based (CREATOR > ADMIN > MEMBER) |
+| **API Protection** | All endpoints require valid JWT |
+| **CSRF** | Disabled (stateless API) |
+| **User Identity** | `@AuthenticationPrincipal` prevents spoofing |
+
+### Access Control Rules
+
+- ✅ **Creator**: Full control, cannot be removed/demoted
+- ✅ **Admin**: Manage members (except creator), manage resources/tasks
+- ✅ **Member**: View resources, manage own tasks
+- ❌ `CREATOR` role cannot be assigned to others
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+mvn test
+
+# Run backend tests only
+mvn -pl backend test
+
+# Run with coverage report
+mvn -pl backend test jacoco:report
+```
+
+---
+
+## 🗺️ Roadmap
+
+- [ ] 🐳 Docker containerization
+- [ ] 🔄 OAuth2 social login (Google)
+- [ ] 📱 Mobile-responsive web client
+- [ ] 🔔 Push notifications
+- [ ] 📧 Email notifications
+- [ ] 🌍 Internationalization (i18n)
+- [ ] 🧪 CI/CD pipeline
+
+---
+
+## 👨‍💻 Author
+
+<div align="center">
+
+**Dmitrij Mitrofanov**
+
+[![GitHub](https://img.shields.io/badge/GitHub-dmitthedazed-181717?style=for-the-badge&logo=github)](https://github.com/dmitthedazed)
+
+*Semester Project — B-TSIKT*
+
+</div>
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if you found it helpful!**
+
+Made with ❤️ and ☕
+
+</div>

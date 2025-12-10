@@ -4,6 +4,8 @@ import com.combined.frontend.MainApp;
 import com.combined.frontend.service.ApiService;
 import com.combined.frontend.service.JwtDecoder;
 import com.combined.frontend.service.NotificationService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.animation.PauseTransition;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
@@ -15,11 +17,16 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebView;
+import javafx.concurrent.Worker;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class LoginController {
 
@@ -30,6 +37,7 @@ public class LoginController {
     private PasswordField passwordField;
 
     private final ApiService apiService = new ApiService();
+    private final ObjectMapper mapper = new ObjectMapper();
     private static final String DEFAULT_API = System.getProperty("API_BASE_URL", "http://localhost:8080/api");
     private static final String DEMO_API = "http://localhost:8081/api";
 
@@ -82,6 +90,53 @@ public class LoginController {
         performLogin(email, password);
     }
 
+    @FXML
+    private void handleGoogleLogin() {
+        apiService.setBaseUrl(DEFAULT_API);
+        String root = baseHost(apiService.getBaseUrl());
+        String oauthUrl = root + "/oauth2/authorization/google";
+        Stage stage = new Stage();
+        stage.setTitle("Sign in with Google");
+        WebView webView = new WebView();
+        WebEngine engine = webView.getEngine();
+        BorderPane pane = new BorderPane(webView);
+        Scene scene = new Scene(pane, 620, 760);
+        stage.setScene(scene);
+
+        engine.getLoadWorker().stateProperty().addListener((obs, oldState, newState) -> {
+            if (newState == Worker.State.SUCCEEDED) {
+                String location = engine.getLocation();
+                if (location != null && location.contains("/login/oauth2/code/google")) {
+                    try {
+                        Object bodyText = engine.executeScript("document.body.textContent");
+                        if (bodyText != null) {
+                            String json = bodyText.toString().trim();
+                            Map<String, Object> payload = mapper.readValue(json, new TypeReference<>() {});
+                            String token = (String) payload.get("token");
+                            if (token == null || token.isBlank()) {
+                                showToastError("OAuth login failed: token missing.");
+                                return;
+                            }
+                            Long userId = JwtDecoder.getUserIdFromToken(token);
+                            String nickname = JwtDecoder.getNicknameFromToken(token);
+                            apiService.setTokenAndUserId(token, userId);
+                            stage.close();
+                            switchToMainView(apiService, userId, nickname);
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        showToastError("OAuth login failed: " + ex.getMessage());
+                    }
+                }
+            } else if (newState == Worker.State.FAILED) {
+                showToastError("Could not load Google login page.");
+            }
+        });
+
+        stage.show();
+        engine.load(oauthUrl);
+    }
+
     private void performLogin(String email, String password) {
         try {
             if (email == null || email.isBlank()) {
@@ -105,6 +160,13 @@ public class LoginController {
             showToastError("Wrong username or password.");
             e.printStackTrace();
         }
+    }
+
+    private String baseHost(String base) {
+        if (base == null) return "http://localhost:8080";
+        if (base.endsWith("/")) base = base.substring(0, base.length() - 1);
+        if (base.endsWith("/api")) base = base.substring(0, base.length() - 4);
+        return base;
     }
 
     @FXML
