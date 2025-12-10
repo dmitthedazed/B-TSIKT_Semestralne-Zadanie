@@ -199,7 +199,6 @@ public class GlobalTasksController implements BaseController {
         new Thread(() -> {
             try {
                 List<TaskDto> loaded = apiService.getMyTasks(
-                        currentUserId,
                         "All".equalsIgnoreCase(statusFilter) ? null : statusFilter,
                         groupId,
                         participation,
@@ -335,7 +334,7 @@ public class GlobalTasksController implements BaseController {
         if (apiService == null || currentUserId == null) return;
         new Thread(() -> {
             try {
-                List<GroupDto> groups = apiService.getMyGroups(currentUserId);
+                List<GroupDto> groups = apiService.getMyGroups();
                 List<GroupFilterItem> items = groups.stream()
                         .map(g -> new GroupFilterItem(g.getId(), g.getName()))
                         .sorted(Comparator.comparing(GroupFilterItem::getLabel, String.CASE_INSENSITIVE_ORDER))

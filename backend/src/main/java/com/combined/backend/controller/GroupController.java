@@ -22,8 +22,9 @@ public class GroupController {
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<GroupDto> createGroup(@RequestBody GroupDto groupDto) {
-        return ResponseEntity.ok(groupService.createGroup(groupDto));
+    public ResponseEntity<GroupDto> createGroup(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                @RequestBody GroupDto groupDto) {
+        return ResponseEntity.ok(groupService.createGroup(userDetails.getUserId(), groupDto));
     }
 
     @GetMapping("/my")

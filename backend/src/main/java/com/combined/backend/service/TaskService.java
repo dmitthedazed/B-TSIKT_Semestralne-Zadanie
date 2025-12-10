@@ -8,7 +8,9 @@ import com.combined.backend.repository.GroupRepository;
 import com.combined.backend.repository.MembershipRepository;
 import com.combined.backend.repository.TaskRepository;
 import com.combined.backend.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -36,11 +38,16 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto createTask(TaskDto taskDto) {
+    public TaskDto createTask(Long actorId, TaskDto taskDto) {
         Group group = groupRepository.findById(taskDto.getGroupId())
                 .orElseThrow(() -> new RuntimeException("Group not found"));
-        User createdBy = userRepository.findById(taskDto.getCreatedById())
+        User createdBy = userRepository.findById(actorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Only group creator or admins/members of the group can create tasks
+        if (!isMemberOfGroup(actorId, group.getGroupId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not a member of this group");
+        }
 
         User assignedTo = null;
         if (taskDto.getAssignedToId() != null) {
@@ -71,9 +78,13 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto updateTask(Long taskId, TaskDto taskDto) {
+    public TaskDto updateTask(Long actorId, Long taskId, TaskDto taskDto) {
         Task existingTask = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        if (!canModifyTask(actorId, existingTask)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to modify this task");
+        }
 
         User assignedTo = null;
         if (taskDto.getAssignedToId() != null) {
@@ -92,11 +103,16 @@ public class TaskService {
     }
 
     @Transactional
-    public void deleteTask(Long taskId) {
+    public void deleteTask(Long actorId, Long taskId) {
         if (!taskRepository.existsById(taskId)) {
             throw new RuntimeException("Task not found");
         }
-        taskRepository.deleteById(taskId);
+        Task existingTask = taskRepository.findById(taskId)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        if (!canManageTask(actorId, existingTask)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to delete this task");
+        }
+        taskRepository.delete(existingTask);
     }
 
     public List<TaskDto> getTasksForUser(Long userId,
@@ -166,5 +182,39 @@ public class TaskService {
                 assignedToName,
                 task.getCreatedAt()
         );
+    }
+
+    private boolean isMemberOfGroup(Long userId, Long groupId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new RuntimeException("Group not found"));
+        if (group.getCreatedBy() != null && group.getCreatedBy().getUserId().equals(userId)) {
+            return true;
+        }
+        return membershipRepository.existsByUserAndGroup(user, group);
+    }
+
+    private boolean canModifyTask(Long actorId, Task task) {
+        // Allow if actor is group creator, group admin, task creator, or current assignee
+        if (task.getGroup().getCreatedBy().getUserId().equals(actorId)) return true;
+        if (isGroupAdmin(actorId, task.getGroup())) return true;
+        if (task.getCreatedBy() != null && task.getCreatedBy().getUserId().equals(actorId)) return true;
+        return task.getAssignedTo() != null && task.getAssignedTo().getUserId().equals(actorId);
+    }
+
+    private boolean canManageTask(Long actorId, Task task) {
+        // Stricter: only group creator/admin or task creator can delete
+        if (task.getGroup().getCreatedBy().getUserId().equals(actorId)) return true;
+        if (isGroupAdmin(actorId, task.getGroup())) return true;
+        return task.getCreatedBy() != null && task.getCreatedBy().getUserId().equals(actorId);
+    }
+
+    private boolean isGroupAdmin(Long actorId, Group group) {
+        User user = userRepository.findById(actorId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return membershipRepository.findByUserAndGroup(user, group)
+                .map(m -> m.getRole() == com.combined.backend.model.Membership.Role.ADMIN)
+                .orElse(false);
     }
 }

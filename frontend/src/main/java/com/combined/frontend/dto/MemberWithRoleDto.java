@@ -1,7 +1,9 @@
 package com.combined.frontend.dto;
 
 import com.combined.backend.model.Membership;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MemberWithRoleDto {
     private Long userId;
     private String firstName;

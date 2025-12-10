@@ -7,7 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.Parent;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -79,7 +79,7 @@ public class GroupDetailController implements BaseController {
         Tab overviewTab = groupTabPane.getTabs().get(0);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/overview-view.fxml"));
-            Pane overviewPane = loader.load();
+            Parent overviewPane = loader.load();
             overviewController = loader.getController();
             overviewController.setApiService(apiService);
             overviewController.setCurrentUser(currentUserId, currentNickname);
@@ -95,7 +95,7 @@ public class GroupDetailController implements BaseController {
         Tab tasksTab = groupTabPane.getTabs().get(1);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/tasks-view.fxml"));
-            Pane tasksPane = loader.load();
+            Parent tasksPane = loader.load();
             tasksController = loader.getController();
             tasksController.setApiService(apiService);
             tasksController.setCurrentUser(currentUserId, currentNickname);
@@ -111,7 +111,7 @@ public class GroupDetailController implements BaseController {
         Tab resourcesTab = groupTabPane.getTabs().get(2);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/resources-view.fxml"));
-            Pane resourcesPane = loader.load();
+            Parent resourcesPane = loader.load();
             resourcesController = loader.getController();
             resourcesController.setApiService(apiService);
             resourcesController.setCurrentUser(currentUserId, currentNickname);
@@ -127,7 +127,7 @@ public class GroupDetailController implements BaseController {
         Tab membersTab = groupTabPane.getTabs().get(3);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/members-view.fxml"));
-            Pane membersPane = loader.load();
+            Parent membersPane = loader.load();
             membersController = loader.getController();
             membersController.setApiService(apiService);
             membersController.setCurrentUser(currentUserId, currentNickname);
@@ -143,7 +143,7 @@ public class GroupDetailController implements BaseController {
         Tab statsTab = groupTabPane.getTabs().get(4);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/statistics-view.fxml"));
-            Pane statsPane = loader.load();
+            Parent statsPane = loader.load();
             statsController = loader.getController();
             statsController.setApiService(apiService);
             statsController.setCurrentUser(currentUserId, currentNickname);

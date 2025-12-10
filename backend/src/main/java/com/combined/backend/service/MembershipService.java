@@ -66,6 +66,10 @@ public class MembershipService {
         Membership membership = membershipRepository.findByUserAndGroup(user, group)
                 .orElseThrow(() -> new RuntimeException("User is not a member of this group"));
 
+        if (group.getCreatedBy().getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Group creator cannot leave their own group");
+        }
+
         membershipRepository.delete(membership);
         activityLogService.logActivity(userId, groupId, "USER_LEFT_GROUP", "User '" + user.getNickname() + "' left group '" + group.getName() + "'.");
     }
@@ -81,18 +85,33 @@ public class MembershipService {
     public List<MemberWithRoleDto> getGroupMembers(Long groupId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
-        return membershipRepository.findByGroup(group).stream()
-                .map(m -> new MemberWithRoleDto(m.getUser(), m.getRole()))
+        List<MemberWithRoleDto> members = membershipRepository.findByGroup(group).stream()
+                .map(m -> {
+                    Membership.Role role = m.getUser().getUserId().equals(group.getCreatedBy().getUserId())
+                            ? Membership.Role.CREATOR
+                            : m.getRole();
+                    return new MemberWithRoleDto(m.getUser(), role);
+                })
                 .collect(Collectors.toList());
+        boolean creatorPresent = members.stream().anyMatch(m -> m.getUserId().equals(group.getCreatedBy().getUserId()));
+        if (!creatorPresent) {
+            members.add(new MemberWithRoleDto(group.getCreatedBy(), Membership.Role.CREATOR));
+        }
+        return members;
     }
 
     @Transactional
-    public Membership addMember(Long groupId, Long userId, Membership.Role role) {
+    public Membership addMember(Long actorId, Long groupId, Long userId, Membership.Role role) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
 
+        ensureActorIsAdminOrCreator(actorId, group);
+
+        if (role == Membership.Role.CREATOR) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot assign CREATOR role");
+        }
         if (membershipRepository.existsByUserAndGroup(user, group)) {
             throw new RuntimeException("User is already a member of this group");
         }
@@ -109,18 +128,24 @@ public class MembershipService {
     }
 
     @Transactional
-    public Membership addMemberByEmail(Long groupId, String email, Membership.Role role) {
+    public Membership addMemberByEmail(Long actorId, Long groupId, String email, Membership.Role role) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        return addMember(groupId, user.getUserId(), role);
+        return addMember(actorId, groupId, user.getUserId(), role);
     }
 
     @Transactional
-    public void removeMember(Long groupId, Long userId) {
+    public void removeMember(Long actorId, Long groupId, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
+
+        ensureActorIsAdminOrCreator(actorId, group);
+
+        if (group.getCreatedBy().getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot remove group creator");
+        }
 
         Membership membership = membershipRepository.findByUserAndGroup(user, group)
                 .orElseThrow(() -> new RuntimeException("User is not a member of this group"));
@@ -136,11 +161,20 @@ public class MembershipService {
     }
 
     @Transactional
-    public Membership updateMemberRole(Long groupId, Long userId, Membership.Role newRole) {
+    public Membership updateMemberRole(Long actorId, Long groupId, Long userId, Membership.Role newRole) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
+
+        ensureActorIsAdminOrCreator(actorId, group);
+
+        if (newRole == Membership.Role.CREATOR) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot assign CREATOR role");
+        }
+        if (group.getCreatedBy().getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot change role of group creator");
+        }
 
         Membership membership = membershipRepository.findByUserAndGroup(user, group)
                 .orElseThrow(() -> new RuntimeException("User is not a member of this group"));
@@ -150,5 +184,19 @@ public class MembershipService {
         Membership updatedMembership = membershipRepository.save(membership);
         activityLogService.logActivity(userId, groupId, "MEMBER_ROLE_UPDATED", "User '" + user.getNickname() + "' role in group '" + group.getName() + "' changed from " + oldRole.name() + " to " + newRole.name() + ".");
         return updatedMembership;
+    }
+
+    private void ensureActorIsAdminOrCreator(Long actorId, Group group) {
+        if (group.getCreatedBy().getUserId().equals(actorId)) {
+            return;
+        }
+        User actor = userRepository.findById(actorId)
+                .orElseThrow(() -> new RuntimeException("Actor not found"));
+        boolean isAdmin = membershipRepository.findByUserAndGroup(actor, group)
+                .map(m -> m.getRole() == Membership.Role.ADMIN)
+                .orElse(false);
+        if (!isAdmin) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only group admin or creator can perform this action");
+        }
     }
 }

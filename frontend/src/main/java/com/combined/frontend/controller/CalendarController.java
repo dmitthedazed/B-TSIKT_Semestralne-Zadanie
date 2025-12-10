@@ -125,7 +125,7 @@ public class CalendarController implements BaseController {
         new Thread(() -> {
             try {
                 // Fetch all groups the user is a member of
-                List<GroupDto> groups = apiService.getMyGroups(currentUserId); // Changed to getMyGroups
+                List<GroupDto> groups = apiService.getMyGroups();
                 // Then fetch tasks for each group
                 Map<LocalDate, List<TaskDto>> tasksByDate = new java.util.HashMap<>();
                 for (GroupDto group : groups) {

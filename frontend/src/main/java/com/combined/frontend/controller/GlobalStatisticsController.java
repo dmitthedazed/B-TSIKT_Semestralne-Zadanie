@@ -137,14 +137,22 @@ public class GlobalStatisticsController implements BaseController {
 
         new Thread(() -> {
             try {
-                cachedTasks = apiService.getMyTasks(currentUserId, null, null, "ALL", null);
-                cachedLogs = apiService.getUserActivityLogs(currentUserId, days);
+                cachedTasks = apiService.getMyTasks(null, null, "ALL", null);
+                cachedLogs = apiService.getUserActivityLogs(days);
                 Platform.runLater(() -> {
                     updateCharts();
                     statusLabel.setText("Statistics loaded.");
                 });
             } catch (Exception e) {
-                Platform.runLater(() -> statusLabel.setText("Failed to load statistics: " + e.getMessage()));
+                boolean unauthorized = e.getMessage() != null && e.getMessage().toLowerCase().contains("unauthorized");
+                cachedLogs = List.of(); // keep charts running
+                Platform.runLater(() -> {
+                    updateCharts();
+                    statusLabel.setText(unauthorized ? "Authorization required for activity logs" : "Failed to load statistics: " + e.getMessage());
+                    if (unauthorized) {
+                        mainController.showAlert(Alert.AlertType.ERROR, "Session issue", "Please re-login to view activity logs.");
+                    }
+                });
                 e.printStackTrace();
             }
         }).start();

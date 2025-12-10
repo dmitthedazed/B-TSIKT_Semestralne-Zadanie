@@ -216,7 +216,7 @@ public class GroupsController implements BaseController {
 
         new Thread(() -> {
             try {
-                List<GroupDto> groupList = apiService.getMyGroups(currentUserId);
+                List<GroupDto> groupList = apiService.getMyGroups();
 
                 Platform.runLater(() -> {
                     myGroupsData.setAll(groupList);

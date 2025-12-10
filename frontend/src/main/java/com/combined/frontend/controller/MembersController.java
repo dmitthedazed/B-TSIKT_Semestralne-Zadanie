@@ -31,6 +31,7 @@ public class MembersController implements BaseController {
     private MainController mainController;
     private GroupDto currentGroup;
     private boolean canManageMembers = false;
+    private Membership.Role currentUserRoleInGroup = null;
 
     private final ObservableList<MemberWithRoleDto> membersData = FXCollections.observableArrayList();
     @Override
@@ -63,6 +64,8 @@ public class MembersController implements BaseController {
         } else {
             membersData.clear();
             statusLabel.setText("No group selected.");
+            currentUserRoleInGroup = null;
+            canManageMembers = false;
         }
     }
 
@@ -196,10 +199,18 @@ public class MembersController implements BaseController {
         new Thread(() -> {
             try {
                 List<MemberWithRoleDto> memberList = apiService.getGroupMembers(currentGroup.getId());
+                currentUserRoleInGroup = memberList.stream()
+                        .filter(m -> m.getUserId().equals(currentUserId))
+                        .findFirst()
+                        .map(MemberWithRoleDto::getRole)
+                        .orElse(null);
+                canManageMembers = currentGroup.getCreatedById().equals(currentUserId) ||
+                        currentUserRoleInGroup == Membership.Role.ADMIN;
                 Platform.runLater(() -> {
                     // re-bind items to ensure the table is pointing at the latest list
                     ObservableList<MemberWithRoleDto> newData = FXCollections.observableArrayList(memberList);
                     membersData.setAll(newData);
+                    addMemberButton.setDisable(!canManageMembers);
                     statusLabel.setStyle("-fx-text-fill: green;");
                     statusLabel.setText("Loaded " + memberList.size() + " members.");
                 });
@@ -226,7 +237,8 @@ public class MembersController implements BaseController {
     private class MemberCell extends ListCell<MemberWithRoleDto> {
         private final Label nameLabel = new Label();
         private final Label emailLabel = new Label();
-        private final ComboBox<Membership.Role> roleCombo = new ComboBox<>(FXCollections.observableArrayList(Membership.Role.values()));
+        private final ComboBox<Membership.Role> roleCombo = new ComboBox<>(
+                FXCollections.observableArrayList(Membership.Role.ADMIN, Membership.Role.MEMBER));
         private final Button removeButton = new Button("Remove");
         private final HBox root = new HBox(10);
         private final Region spacer = new Region();
@@ -245,7 +257,8 @@ public class MembersController implements BaseController {
             roleCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
                 if (currentUser == null || newVal == null) return;
                 boolean isCreator = currentGroup != null && currentUser.getUserId().equals(currentGroup.getCreatedById());
-                if (isCreator) return;
+                boolean isSelf = currentUser.getUserId().equals(currentUserId);
+                if (isCreator || isSelf || !canManageMembers) return;
                 handleChangeRole(currentUser, newVal);
             });
         }
@@ -269,13 +282,19 @@ public class MembersController implements BaseController {
                 emailLabel.setText("<" + item.getEmail() + ">");
 
                 boolean isCreator = currentGroup != null && item.getUserId().equals(currentGroup.getCreatedById());
-                Membership.Role role = item.getRole() != null ? item.getRole() : Membership.Role.MEMBER;
-                roleCombo.getSelectionModel().select(role);
-                if (isCreator) {
-                    roleCombo.setPromptText("CREATOR");
+                boolean isSelf = item.getUserId().equals(currentUserId);
+                boolean actorCanManageThisRow = canManageMembers && !isCreator && !isSelf;
+                Membership.Role role = item.getRole();
+                if (role == Membership.Role.CREATOR) {
+                    roleCombo.getSelectionModel().clearSelection();
+                } else {
+                    roleCombo.getSelectionModel().select(role != null ? role : Membership.Role.MEMBER);
                 }
-                roleCombo.setDisable(isCreator || !canManageMembers);
-                removeButton.setDisable(isCreator || !canManageMembers);
+                if (isCreator) {
+                    roleCombo.setPromptText("CREATOR (locked)");
+                }
+                roleCombo.setDisable(!actorCanManageThisRow);
+                removeButton.setDisable(!actorCanManageThisRow);
 
                 setGraphic(root);
             }

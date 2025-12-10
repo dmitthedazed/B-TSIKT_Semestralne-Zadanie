@@ -38,8 +38,8 @@ public class GroupService {
     }
 
     @Transactional
-    public GroupDto createGroup(GroupDto groupDto) {
-        User createdBy = userRepository.findById(groupDto.getCreatedById())
+    public GroupDto createGroup(Long actorId, GroupDto groupDto) {
+        User createdBy = userRepository.findById(actorId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Group group = new Group();
@@ -54,12 +54,12 @@ public class GroupService {
         Membership membership = new Membership();
         membership.setUser(createdBy);
         membership.setGroup(savedGroup);
-        membership.setRole(Membership.Role.ADMIN); // Creator is an admin
+        membership.setRole(Membership.Role.CREATOR);
         membership.setJoinedAt(LocalDateTime.now());
         membershipRepository.save(membership);
 
         activityLogService.logActivity(createdBy.getUserId(), savedGroup.getGroupId(), "GROUP_CREATED", "Group '" + savedGroup.getName() + "' created.");
-        activityLogService.logActivity(createdBy.getUserId(), savedGroup.getGroupId(), "USER_JOINED_GROUP", "User '" + createdBy.getNickname() + "' joined group '" + savedGroup.getName() + "' as ADMIN.");
+        activityLogService.logActivity(createdBy.getUserId(), savedGroup.getGroupId(), "USER_JOINED_GROUP", "User '" + createdBy.getNickname() + "' joined group '" + savedGroup.getName() + "' as CREATOR.");
 
 
         return toDto(savedGroup, true); // Creator is always a member
