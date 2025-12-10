@@ -8,6 +8,8 @@ import com.combined.backend.repository.GroupRepository;
 import com.combined.backend.repository.MembershipRepository;
 import com.combined.backend.repository.TaskRepository;
 import com.combined.backend.repository.UserRepository;
+import com.combined.backend.service.WebSocketNotificationService;
+import com.combined.backend.service.ActivityLogService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,15 +28,21 @@ public class TaskService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final MembershipRepository membershipRepository;
+    private final ActivityLogService activityLogService;
+    private final WebSocketNotificationService webSocketNotificationService;
 
     public TaskService(TaskRepository taskRepository,
                        GroupRepository groupRepository,
                        UserRepository userRepository,
-                       MembershipRepository membershipRepository) {
+                       MembershipRepository membershipRepository,
+                       ActivityLogService activityLogService,
+                       WebSocketNotificationService webSocketNotificationService) {
         this.taskRepository = taskRepository;
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
         this.membershipRepository = membershipRepository;
+        this.activityLogService = activityLogService;
+        this.webSocketNotificationService = webSocketNotificationService;
     }
 
     @Transactional
@@ -66,6 +74,9 @@ public class TaskService {
         task.setCreatedAt(LocalDateTime.now());
 
         Task savedTask = taskRepository.save(task);
+        TaskDto dto = toDto(savedTask);
+        activityLogService.logActivity(actorId, group.getGroupId(), "TASK_CREATED", "Task '" + task.getTitle() + "' created.");
+        webSocketNotificationService.notifyTaskPayload(group.getGroupId(), "TASK_CREATED", "Task created: " + task.getTitle(), dto);
         return toDto(savedTask);
     }
 
@@ -99,7 +110,10 @@ public class TaskService {
         existingTask.setAssignedTo(assignedTo);
 
         Task updatedTask = taskRepository.save(existingTask);
-        return toDto(updatedTask);
+        TaskDto dto = toDto(updatedTask);
+        activityLogService.logActivity(actorId, existingTask.getGroup().getGroupId(), "TASK_UPDATED", "Task '" + existingTask.getTitle() + "' updated.");
+        webSocketNotificationService.notifyTaskPayload(existingTask.getGroup().getGroupId(), "TASK_UPDATED", "Task updated: " + existingTask.getTitle(), dto);
+        return dto;
     }
 
     @Transactional
@@ -112,7 +126,10 @@ public class TaskService {
         if (!canManageTask(actorId, existingTask)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to delete this task");
         }
+        TaskDto dto = toDto(existingTask);
         taskRepository.delete(existingTask);
+        activityLogService.logActivity(actorId, existingTask.getGroup().getGroupId(), "TASK_DELETED", "Task '" + existingTask.getTitle() + "' deleted.");
+        webSocketNotificationService.notifyTaskPayload(existingTask.getGroup().getGroupId(), "TASK_DELETED", "Task deleted: " + existingTask.getTitle(), dto);
     }
 
     public List<TaskDto> getTasksForUser(Long userId,

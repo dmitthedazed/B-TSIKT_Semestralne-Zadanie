@@ -152,6 +152,8 @@ public class ApiService {
 
         if (response.statusCode() == 200) {
             return objectMapper.readValue(response.body(), GroupDto.class);
+        } else if (response.statusCode() == 401 || response.statusCode() == 403) {
+            throw new RuntimeException("Unauthorized to create group");
         } else {
             throw new RuntimeException("Failed to create group: " + response.body());
         }
@@ -165,11 +167,14 @@ public class ApiService {
         System.out.println("ApiService (joinGroup): Received response body: " + response.body());
 
         if (response.statusCode() != 200) {
+            if (response.statusCode() == 401 || response.statusCode() == 403) {
+                throw new RuntimeException("Unauthorized to join group");
+            }
             throw new RuntimeException("Failed to join group: " + response.body());
         }
     }
 
-    public List<GroupDto> getAllGroupsWithMembershipFlag(Long userId) throws Exception {
+    public List<GroupDto> getAllGroupsWithMembershipFlag() throws Exception {
         // Backend returns all groups with isMember flag
         HttpRequest request = authenticatedGetRequest("/groups");
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -194,9 +199,7 @@ public class ApiService {
         System.out.println("ApiService (removeMember): Received response body: " + response.body());
 
         if (response.statusCode() == 204 || response.statusCode() == 200) return;
-        if (response.statusCode() == 401 || response.statusCode() == 403) {
-            throw new RuntimeException("Unauthorized to remove member");
-        }
+        if (isUnauthorized(response.statusCode())) throw new RuntimeException("Unauthorized to remove member");
         throw new RuntimeException("Failed to remove member: " + response.body());
     }
 
@@ -209,9 +212,7 @@ public class ApiService {
         System.out.println("ApiService (updateMemberRole): Received response body: " + response.body());
 
         if (response.statusCode() == 200) return;
-        if (response.statusCode() == 401 || response.statusCode() == 403) {
-            throw new RuntimeException("Unauthorized to update member role");
-        }
+        if (isUnauthorized(response.statusCode())) throw new RuntimeException("Unauthorized to update member role");
         throw new RuntimeException("Failed to update member role: " + response.body());
     }
 
@@ -225,9 +226,7 @@ public class ApiService {
         System.out.println("ApiService (addMemberByEmail): Received response body: " + response.body());
 
         if (response.statusCode() == 200) return;
-        if (response.statusCode() == 401 || response.statusCode() == 403) {
-            throw new RuntimeException("Unauthorized to add member");
-        }
+        if (isUnauthorized(response.statusCode())) throw new RuntimeException("Unauthorized to add member");
         throw new RuntimeException("Failed to add member: " + response.body());
     }
 
@@ -368,9 +367,7 @@ public class ApiService {
         if (response.statusCode() == 200) {
             return objectMapper.readValue(response.body(), TaskDto.class);
         }
-        if (response.statusCode() == 401 || response.statusCode() == 403) {
-            throw new RuntimeException("Unauthorized to update task");
-        }
+        if (isUnauthorized(response.statusCode())) throw new RuntimeException("Unauthorized to update task");
         throw new RuntimeException("Failed to update task: " + response.body());
     }
 
@@ -385,9 +382,7 @@ public class ApiService {
         System.out.println("ApiService (deleteTask): Received response body: " + response.body());
 
         if (response.statusCode() == 204 || response.statusCode() == 200) return; // 204 No Content is typical for DELETE
-        if (response.statusCode() == 401 || response.statusCode() == 403) {
-            throw new RuntimeException("Unauthorized to delete task");
-        }
+        if (isUnauthorized(response.statusCode())) throw new RuntimeException("Unauthorized to delete task");
         throw new RuntimeException("Failed to delete task: " + response.body());
     }
 
@@ -400,18 +395,14 @@ public class ApiService {
 
         if (response.statusCode() == 200) {
             return objectMapper.readValue(response.body(), new TypeReference<List<ResourceDto>>() {});
+        } else if (response.statusCode() == 401 || response.statusCode() == 403) {
+            throw new RuntimeException("Unauthorized to get resources");
         } else {
             throw new RuntimeException("Failed to get resources: " + response.body());
         }
     }
 
     public ResourceDto createResource(ResourceDto resourceDto) throws Exception {
-        if (currentUserId == null) {
-            throw new IllegalStateException("User not logged in. Cannot create resource.");
-        }
-        resourceDto.setUploadedById(currentUserId);
-        resourceDto.setType("LINK"); // Default type for now
-
         String requestBody = objectMapper.writeValueAsString(resourceDto);
         HttpRequest request = authenticatedPostRequest("/resources", requestBody);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -421,17 +412,14 @@ public class ApiService {
 
         if (response.statusCode() == 200) {
             return objectMapper.readValue(response.body(), ResourceDto.class);
+        } else if (response.statusCode() == 401 || response.statusCode() == 403) {
+            throw new RuntimeException("Unauthorized to create resource");
         } else {
             throw new RuntimeException("Failed to create resource: " + response.body());
         }
     }
 
     public ResourceDto updateResource(Long resourceId, ResourceDto resourceDto) throws Exception {
-        if (currentUserId == null) {
-            throw new IllegalStateException("User not logged in. Cannot update resource.");
-        }
-        // resourceDto.setUploadedById(currentUserId); // UploadedBy should not change on update
-
         String requestBody = objectMapper.writeValueAsString(resourceDto);
         HttpRequest request = authenticatedPutRequest("/resources/" + resourceId, requestBody);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -441,21 +429,23 @@ public class ApiService {
 
         if (response.statusCode() == 200) {
             return objectMapper.readValue(response.body(), ResourceDto.class);
+        } else if (response.statusCode() == 401 || response.statusCode() == 403) {
+            throw new RuntimeException("Unauthorized to update resource");
         } else {
             throw new RuntimeException("Failed to update resource: " + response.body());
         }
     }
 
     public void deleteResource(Long resourceId) throws Exception {
-        if (currentUserId == null) {
-            throw new IllegalStateException("User not logged in. Cannot delete resource.");
-        }
-        HttpRequest request = authenticatedDeleteRequest("/resources/" + resourceId + "?requesterId=" + currentUserId);
+        HttpRequest request = authenticatedDeleteRequest("/resources/" + resourceId);
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         System.out.println("ApiService (deleteResource): Received status code: " + response.statusCode());
         System.out.println("ApiService (deleteResource): Received response body: " + response.body());
 
+        if (response.statusCode() == 401 || response.statusCode() == 403) {
+            throw new RuntimeException("Unauthorized to delete resource");
+        }
         if (response.statusCode() != 204 && response.statusCode() != 200) {
             throw new RuntimeException("Failed to delete resource: " + response.body());
         }
@@ -470,6 +460,8 @@ public class ApiService {
 
         if (response.statusCode() == 200) {
             return objectMapper.readValue(response.body(), new TypeReference<List<MemberWithRoleDto>>() {});
+        } else if (response.statusCode() == 401 || response.statusCode() == 403) {
+            throw new RuntimeException("Unauthorized to get group members");
         } else {
             throw new RuntimeException("Failed to get group members: " + response.body());
         }
@@ -492,7 +484,6 @@ public class ApiService {
             byteArrays.add(value + "\r\n");
         };
         addField.accept("groupId", groupId.toString());
-        addField.accept("uploadedById", currentUserId.toString());
         if (title != null) addField.accept("title", title);
         if (description != null) addField.accept("description", description);
 
@@ -519,6 +510,8 @@ public class ApiService {
         System.out.println("ApiService (uploadFileResource): body " + response.body());
         if (response.statusCode() == 200) {
             return objectMapper.readValue(response.body(), ResourceDto.class);
+        } else if (response.statusCode() == 401 || response.statusCode() == 403) {
+            throw new RuntimeException("Unauthorized to upload resource");
         } else {
             throw new RuntimeException("Failed to upload resource: " + response.body());
         }
@@ -531,6 +524,9 @@ public class ApiService {
         HttpRequest request = authenticatedGetRequest("/resources/" + resourceId + "/download");
         HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
         System.out.println("ApiService (downloadResource): status " + response.statusCode());
+        if (response.statusCode() == 401 || response.statusCode() == 403) {
+            throw new RuntimeException("Unauthorized to download file");
+        }
         if (response.statusCode() != 200) {
             throw new RuntimeException("Failed to download file: " + response.statusCode());
         }
@@ -554,9 +550,13 @@ public class ApiService {
 
         if (response.statusCode() == 200) {
             return objectMapper.readValue(response.body(), GroupStatsDto.class);
-        } else {
-            throw new RuntimeException("Failed to get group stats: " + response.body());
         }
+        if (isUnauthorized(response.statusCode())) throw new RuntimeException("Unauthorized to get group stats");
+        throw new RuntimeException("Failed to get group stats: " + response.body());
+    }
+
+    private boolean isUnauthorized(int statusCode) {
+        return statusCode == 401 || statusCode == 403;
     }
 
     private HttpRequest authenticatedGetRequest(String path) {

@@ -38,8 +38,9 @@ public class MembershipController {
 
     @GetMapping("/group/{groupId}/members")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<MemberWithRoleDto>> getGroupMembers(@PathVariable Long groupId) {
-        return ResponseEntity.ok(membershipService.getGroupMembers(groupId));
+    public ResponseEntity<List<MemberWithRoleDto>> getGroupMembers(@PathVariable Long groupId,
+                                                                   @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(membershipService.getGroupMembers(groupId, userDetails.getUserId()));
     }
 
     @PostMapping("/group/{groupId}/add-member")

@@ -2,17 +2,23 @@ package com.combined.frontend.controller;
 
 import com.combined.backend.dto.GroupDto;
 import com.combined.frontend.service.ApiService;
+import com.combined.frontend.service.NotificationAware;
+import com.combined.frontend.service.NotificationService;
+import com.combined.frontend.service.NotificationService.NotificationMessage;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.Parent;
+import javafx.application.Platform;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.util.function.Consumer;
 
-public class GroupDetailController implements BaseController {
+public class GroupDetailController implements BaseController, NotificationAware {
 
     @FXML private Label groupNameLabel;
     @FXML private Label groupDescriptionLabel;
@@ -25,6 +31,9 @@ public class GroupDetailController implements BaseController {
     private MainController mainController;
     private GroupDto currentGroup; // The group being displayed
     private boolean tabsLoaded = false;
+    private NotificationService notificationService;
+    private Long subscribedGroupId;
+    private long lastMembersRefreshMs = 0L;
 
     // References to child controllers
     private OverviewController overviewController;
@@ -49,12 +58,18 @@ public class GroupDetailController implements BaseController {
         this.mainController = mainController;
     }
 
+    @Override
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
+    }
+
     public void setGroup(GroupDto group) {
         this.currentGroup = group;
         if (group != null) {
             groupNameLabel.setText(group.getName());
             groupDescriptionLabel.setText(group.getDescription());
             groupInfoLabel.setText("Created by: " + group.getCreatedByName() + " on " + group.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+            subscribeToGroupNotifications(group.getId());
             if (!tabsLoaded) {
                 loadTabContent();
                 tabsLoaded = true;
@@ -73,6 +88,36 @@ public class GroupDetailController implements BaseController {
     private void initialize() {
         // Content will be loaded once setGroup is called
     }
+
+    private void subscribeToGroupNotifications(Long groupId) {
+        if (notificationService == null || groupId == null) return;
+        if (subscribedGroupId != null && !subscribedGroupId.equals(groupId)) {
+            notificationService.unsubscribeFromGroup(subscribedGroupId);
+        }
+        subscribedGroupId = groupId;
+        notificationService.subscribeToGroup(groupId, onGroupNotification);
+    }
+
+    private final Consumer<NotificationMessage> onGroupNotification = message -> {
+        if (message == null || currentGroup == null) return;
+        if (!currentGroup.getId().equals(message.getGroupId())) return;
+        // Refresh relevant tabs on FX thread
+        javafx.application.Platform.runLater(() -> {
+            String type = message.getType() != null ? message.getType().toUpperCase(Locale.ROOT) : "";
+            if (type.startsWith("TASK_")) {
+                if (tasksController != null) tasksController.refreshFromServer();
+                if (statsController != null) statsController.refreshStats();
+            } else if (type.startsWith("RESOURCE_")) {
+                if (resourcesController != null) resourcesController.refreshResources();
+            } else if (type.startsWith("MEMBER_") || type.contains("USER")) {
+                long now = System.currentTimeMillis();
+                if (now - lastMembersRefreshMs > 500 && membersController != null) { // debounce duplicates
+                    lastMembersRefreshMs = now;
+                    membersController.refreshMembers();
+                }
+            }
+        });
+    };
 
     private void loadTabContent() {
         // Load Overview tab content

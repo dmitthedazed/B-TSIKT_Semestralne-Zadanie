@@ -8,6 +8,7 @@ import com.combined.backend.repository.GroupRepository;
 import com.combined.backend.repository.MembershipRepository;
 import com.combined.backend.repository.TaskRepository;
 import com.combined.backend.repository.UserRepository;
+import com.combined.backend.service.WebSocketNotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,13 +26,20 @@ public class MembershipService {
     private final GroupRepository groupRepository;
     private final ActivityLogService activityLogService; // New dependency
     private final TaskRepository taskRepository;
+    private final WebSocketNotificationService webSocketNotificationService;
 
-    public MembershipService(MembershipRepository membershipRepository, UserRepository userRepository, GroupRepository groupRepository, ActivityLogService activityLogService, TaskRepository taskRepository) {
+    public MembershipService(MembershipRepository membershipRepository,
+                             UserRepository userRepository,
+                             GroupRepository groupRepository,
+                             ActivityLogService activityLogService,
+                             TaskRepository taskRepository,
+                             WebSocketNotificationService webSocketNotificationService) {
         this.membershipRepository = membershipRepository;
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
         this.activityLogService = activityLogService;
         this.taskRepository = taskRepository;
+        this.webSocketNotificationService = webSocketNotificationService;
     }
 
     @Transactional
@@ -53,6 +61,7 @@ public class MembershipService {
 
         Membership savedMembership = membershipRepository.save(membership);
         activityLogService.logActivity(userId, groupId, "USER_JOINED_GROUP", "User '" + user.getNickname() + "' joined group '" + group.getName() + "'.");
+        webSocketNotificationService.notifyMemberPayload(groupId, "MEMBER_JOINED", "Member joined: " + user.getNickname(), new MemberWithRoleDto(user, Membership.Role.MEMBER));
         return savedMembership;
     }
 
@@ -72,6 +81,7 @@ public class MembershipService {
 
         membershipRepository.delete(membership);
         activityLogService.logActivity(userId, groupId, "USER_LEFT_GROUP", "User '" + user.getNickname() + "' left group '" + group.getName() + "'.");
+        webSocketNotificationService.notifyMemberPayload(groupId, "MEMBER_LEFT", "Member left: " + user.getNickname(), new MemberWithRoleDto(user, Membership.Role.MEMBER));
     }
 
     public boolean isUserMemberOfGroup(Long userId, Long groupId) {
@@ -82,9 +92,16 @@ public class MembershipService {
         return membershipRepository.existsByUserAndGroup(user, group);
     }
 
-    public List<MemberWithRoleDto> getGroupMembers(Long groupId) {
+    public List<MemberWithRoleDto> getGroupMembers(Long groupId, Long requesterId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
+        User requester = userRepository.findById(requesterId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        boolean isCreator = group.getCreatedBy().getUserId().equals(requesterId);
+        boolean isMember = membershipRepository.existsByUserAndGroup(requester, group);
+        if (!isCreator && !isMember) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only group members can view members list");
+        }
         List<MemberWithRoleDto> members = membershipRepository.findByGroup(group).stream()
                 .map(m -> {
                     Membership.Role role = m.getUser().getUserId().equals(group.getCreatedBy().getUserId())
@@ -124,6 +141,7 @@ public class MembershipService {
 
         Membership savedMembership = membershipRepository.save(membership);
         activityLogService.logActivity(userId, groupId, "MEMBER_ADDED", "User '" + user.getNickname() + "' added to group '" + group.getName() + "' as " + role.name() + ".");
+        webSocketNotificationService.notifyMemberPayload(groupId, "MEMBER_ADDED", "Member added: " + user.getNickname(), new MemberWithRoleDto(user, role));
         return savedMembership;
     }
 
@@ -158,6 +176,7 @@ public class MembershipService {
 
         membershipRepository.delete(membership);
         activityLogService.logActivity(userId, groupId, "MEMBER_REMOVED", "User '" + user.getNickname() + "' removed from group '" + group.getName() + "'.");
+        webSocketNotificationService.notifyMemberPayload(groupId, "MEMBER_REMOVED", "Member removed: " + user.getNickname(), new MemberWithRoleDto(user, membership.getRole()));
     }
 
     @Transactional
@@ -183,6 +202,7 @@ public class MembershipService {
         membership.setRole(newRole);
         Membership updatedMembership = membershipRepository.save(membership);
         activityLogService.logActivity(userId, groupId, "MEMBER_ROLE_UPDATED", "User '" + user.getNickname() + "' role in group '" + group.getName() + "' changed from " + oldRole.name() + " to " + newRole.name() + ".");
+        webSocketNotificationService.notifyMemberPayload(groupId, "MEMBER_ROLE_UPDATED", "Role updated for " + user.getNickname(), new MemberWithRoleDto(user, newRole));
         return updatedMembership;
     }
 

@@ -17,6 +17,8 @@ import javafx.scene.layout.Region;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 public class MembersController implements BaseController {
 
     @FXML private ListView<MemberWithRoleDto> membersListView;
@@ -32,6 +34,7 @@ public class MembersController implements BaseController {
     private GroupDto currentGroup;
     private boolean canManageMembers = false;
     private Membership.Role currentUserRoleInGroup = null;
+    private final Map<Long, Membership.Role> pendingRoleChanges = new ConcurrentHashMap<>();
 
     private final ObservableList<MemberWithRoleDto> membersData = FXCollections.observableArrayList();
     @Override
@@ -48,6 +51,12 @@ public class MembersController implements BaseController {
     @Override
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+    }
+
+    public void refreshMembers() {
+        if (currentGroup != null) {
+            loadGroupMembers();
+        }
     }
 
     public void setGroup(GroupDto group) {
@@ -174,14 +183,13 @@ public class MembersController implements BaseController {
         new Thread(() -> {
             try {
                 apiService.updateMemberRole(currentGroup.getId(), member.getUserId(), newRole);
-                Platform.runLater(() -> {
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Member role updated successfully!");
-                    loadGroupMembers(); // Refresh list
-                });
+                Platform.runLater(() -> loadGroupMembers()); // Refresh list without popup
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     showAlert(Alert.AlertType.ERROR, "Error", "Failed to update member role: " + e.getMessage());
                 });
+            } finally {
+                pendingRoleChanges.remove(member.getUserId());
             }
         }).start();
     }
@@ -243,6 +251,7 @@ public class MembersController implements BaseController {
         private final HBox root = new HBox(10);
         private final Region spacer = new Region();
         private MemberWithRoleDto currentUser;
+        private boolean applyingRole = false;
 
         MemberCell() {
             roleCombo.setPrefWidth(140);
@@ -256,9 +265,14 @@ public class MembersController implements BaseController {
 
             roleCombo.valueProperty().addListener((obs, oldVal, newVal) -> {
                 if (currentUser == null || newVal == null) return;
+                if (applyingRole) return; // ignore programmatic set during rendering
+                if (currentUser.getRole() == newVal) return; // no-op if unchanged
                 boolean isCreator = currentGroup != null && currentUser.getUserId().equals(currentGroup.getCreatedById());
                 boolean isSelf = currentUser.getUserId().equals(currentUserId);
                 if (isCreator || isSelf || !canManageMembers) return;
+                Membership.Role pending = pendingRoleChanges.get(currentUser.getUserId());
+                if (pending != null && pending == newVal) return; // debounce identical in-flight
+                pendingRoleChanges.put(currentUser.getUserId(), newVal);
                 handleChangeRole(currentUser, newVal);
             });
         }
@@ -285,11 +299,13 @@ public class MembersController implements BaseController {
                 boolean isSelf = item.getUserId().equals(currentUserId);
                 boolean actorCanManageThisRow = canManageMembers && !isCreator && !isSelf;
                 Membership.Role role = item.getRole();
+                applyingRole = true;
                 if (role == Membership.Role.CREATOR) {
                     roleCombo.getSelectionModel().clearSelection();
                 } else {
                     roleCombo.getSelectionModel().select(role != null ? role : Membership.Role.MEMBER);
                 }
+                applyingRole = false;
                 if (isCreator) {
                     roleCombo.setPromptText("CREATOR (locked)");
                 }

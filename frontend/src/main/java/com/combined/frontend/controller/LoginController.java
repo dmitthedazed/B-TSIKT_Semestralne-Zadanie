@@ -4,6 +4,7 @@ import com.combined.frontend.MainApp;
 import com.combined.frontend.controller.AuthViewController;
 import com.combined.frontend.service.ApiService;
 import com.combined.frontend.service.JwtDecoder;
+import com.combined.frontend.service.NotificationService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
@@ -111,6 +112,10 @@ public class LoginController {
 
             MainController mainController = loader.getController();
             mainController.setApiService(apiService);
+            NotificationService notificationService = new NotificationService();
+            notificationService.setCurrentUserId(userId);
+            notificationService.connect();
+            mainController.setNotificationService(notificationService);
             mainController.setCurrentUser(userId, nickname);
 
             stage.setScene(scene);

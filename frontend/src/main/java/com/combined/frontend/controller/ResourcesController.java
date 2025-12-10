@@ -59,6 +59,12 @@ public class ResourcesController implements BaseController {
         this.mainController = mainController;
     }
 
+    public void refreshResources() {
+        if (currentlySelectedGroup != null) {
+            determineRoleAndLoad(currentlySelectedGroup);
+        }
+    }
+
     public void setCurrentlySelectedGroup(GroupDto group) {
         this.currentlySelectedGroup = group;
         if (group != null) {

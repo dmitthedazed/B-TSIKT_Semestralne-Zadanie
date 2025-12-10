@@ -59,6 +59,12 @@ public class TasksController implements BaseController {
         this.mainController = mainController;
     }
 
+    public void refreshFromServer() {
+        if (currentlySelectedGroup != null) {
+            loadTasksForGroup(currentlySelectedGroup.getId());
+        }
+    }
+
     public void setCurrentlySelectedGroup(GroupDto group) {
         this.currentlySelectedGroup = group;
         if (group != null) {

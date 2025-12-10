@@ -216,6 +216,10 @@ public class GlobalTasksController implements BaseController {
                     statusLabel.setText("Loaded " + finalLoaded.size() + " tasks.");
                 });
             } catch (Exception e) {
+                if (e.getMessage() != null && e.getMessage().toLowerCase().contains("unauthorized")) {
+                    if (mainController != null) mainController.handleUnauthorized("tasks");
+                    return;
+                }
                 Platform.runLater(() -> {
                     statusLabel.setStyle("-fx-text-fill: red;");
                     statusLabel.setText("Error loading tasks: " + e.getMessage());
@@ -242,6 +246,10 @@ public class GlobalTasksController implements BaseController {
                     tasksTable.refresh();
                 });
             } catch (Exception e) {
+                if (e.getMessage() != null && e.getMessage().toLowerCase().contains("unauthorized")) {
+                    if (mainController != null) mainController.handleUnauthorized("tasks");
+                    return;
+                }
                 Platform.runLater(() -> {
                     tasksTable.refresh();
                     showAlert(Alert.AlertType.ERROR, "Update failed", "Could not update status: " + e.getMessage());

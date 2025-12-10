@@ -25,6 +25,7 @@
             <Button fx:id="myGroupsButton" text="Groups" prefWidth="150" onAction="#handleSidebarNavigation"/>
             <Button fx:id="tasksAllButton" text="Tasks" prefWidth="150" onAction="#handleSidebarNavigation"/>
             <Button fx:id="statisticsButton" text="Statistics" prefWidth="150" onAction="#handleSidebarNavigation"/>
+            <Button fx:id="notificationsButton" text="Notifications" prefWidth="150" onAction="#handleSidebarNavigation"/>
             <Button fx:id="profileButton" text="Profile" prefWidth="150" onAction="#handleSidebarNavigation"/>
             <Button fx:id="logoutSidebarButton" text="Logout" prefWidth="150" onAction="#handleLogout"/>
         </VBox>

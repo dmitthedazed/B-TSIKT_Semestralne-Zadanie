@@ -11,6 +11,7 @@ import javafx.scene.chart.BarChart;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -77,6 +78,8 @@ public class GlobalStatisticsController implements BaseController {
 
     private List<TaskDto> cachedTasks;
     private List<ActivityLogDto> cachedLogs;
+    private boolean ready;
+    private boolean loading;
 
     @Override
     public void setApiService(ApiService apiService) {
@@ -127,11 +130,13 @@ public class GlobalStatisticsController implements BaseController {
     }
 
     private void triggerLoad() {
-        if (apiService == null || currentUserId == null) return;
+        ready = apiService != null && currentUserId != null;
+        if (!ready || loading) return;
         loadData();
     }
 
     private void loadData() {
+        loading = true;
         statusLabel.setText("Loading statistics...");
         Integer days = periodToDays(periodComboBox.getValue());
 
@@ -149,11 +154,15 @@ public class GlobalStatisticsController implements BaseController {
                 Platform.runLater(() -> {
                     updateCharts();
                     statusLabel.setText(unauthorized ? "Authorization required for activity logs" : "Failed to load statistics: " + e.getMessage());
-                    if (unauthorized) {
-                        mainController.showAlert(Alert.AlertType.ERROR, "Session issue", "Please re-login to view activity logs.");
+                    if (unauthorized && mainController != null) {
+                        mainController.handleUnauthorized("statistics");
+                    } else if (!unauthorized && mainController != null) {
+                        mainController.showAlert(Alert.AlertType.ERROR, "Statistics", "Failed to load statistics: " + e.getMessage());
                     }
                 });
                 e.printStackTrace();
+            } finally {
+                loading = false;
             }
         }).start();
     }

@@ -47,6 +47,10 @@ public class StatsController implements BaseController {
         this.mainController = mainController;
     }
 
+    public void refreshStats() {
+        loadGroupStats();
+    }
+
     public void setGroup(GroupDto group) {
         this.currentGroup = group;
         if (group != null) {

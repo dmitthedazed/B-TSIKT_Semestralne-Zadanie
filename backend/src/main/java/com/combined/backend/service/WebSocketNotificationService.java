@@ -25,10 +25,18 @@ public class WebSocketNotificationService {
      * @param message Notification message
      */
     public void notifyGroup(Long groupId, String type, String message) {
+        notifyGroup(groupId, type, message, null);
+    }
+
+    public void notifyGroup(Long groupId, String type, String message, Object payload) {
         Map<String, Object> notification = new HashMap<>();
         notification.put("type", type);
         notification.put("message", message);
         notification.put("timestamp", System.currentTimeMillis());
+        notification.put("groupId", groupId);
+        if (payload != null) {
+            notification.put("payload", payload);
+        }
 
         // Send to all subscribers of /topic/group/{groupId}
         messagingTemplate.convertAndSend("/topic/group/" + groupId, notification);
@@ -62,6 +70,10 @@ public class WebSocketNotificationService {
         notifyGroup(groupId, "TASK_UPDATE", message);
     }
 
+    public void notifyTaskPayload(Long groupId, String type, String message, Object payload) {
+        notifyGroup(groupId, type, message, payload);
+    }
+
     /**
      * Send resource uploaded notification
      */
@@ -70,12 +82,20 @@ public class WebSocketNotificationService {
         notifyGroup(groupId, "RESOURCE_UPLOADED", message);
     }
 
+    public void notifyResourcePayload(Long groupId, String type, String message, Object payload) {
+        notifyGroup(groupId, type, message, payload);
+    }
+
     /**
      * Send user joined notification
      */
     public void notifyUserJoined(Long groupId, String userName, String groupName) {
         String message = userName + " joined the group";
         notifyGroup(groupId, "USER_JOINED", message);
+    }
+
+    public void notifyMemberPayload(Long groupId, String type, String message, Object payload) {
+        notifyGroup(groupId, type, message, payload);
     }
 }
 

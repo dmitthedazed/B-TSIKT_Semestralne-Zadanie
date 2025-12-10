@@ -7,6 +7,7 @@ import com.combined.backend.model.User;
 import com.combined.backend.repository.ActivityLogRepository;
 import com.combined.backend.repository.GroupRepository;
 import com.combined.backend.repository.UserRepository;
+import com.combined.backend.repository.MembershipRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,11 +21,16 @@ public class ActivityLogService {
     private final ActivityLogRepository activityLogRepository;
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
+    private final MembershipRepository membershipRepository;
 
-    public ActivityLogService(ActivityLogRepository activityLogRepository, UserRepository userRepository, GroupRepository groupRepository) {
+    public ActivityLogService(ActivityLogRepository activityLogRepository,
+                              UserRepository userRepository,
+                              GroupRepository groupRepository,
+                              MembershipRepository membershipRepository) {
         this.activityLogRepository = activityLogRepository;
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
+        this.membershipRepository = membershipRepository;
     }
 
     public void logActivity(Long userId, Long groupId, String activityType, String description) {
@@ -40,9 +46,18 @@ public class ActivityLogService {
         activityLogRepository.save(log);
     }
 
-    public List<ActivityLog> getGroupActivityLogs(Long groupId) {
+    public List<ActivityLog> getGroupActivityLogs(Long groupId, Long userId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        boolean isCreator = group.getCreatedBy().getUserId().equals(userId);
+        boolean isMember = membershipRepository.existsByUserAndGroup(user, group);
+        if (!isCreator && !isMember) {
+            throw new RuntimeException("User is not a member of this group");
+        }
+
         return activityLogRepository.findByGroupOrderByTimestampDesc(group);
     }
 

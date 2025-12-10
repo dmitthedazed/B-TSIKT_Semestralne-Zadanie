@@ -22,3 +22,5 @@ frontend/uploads/
 ### OS files
 .DS_Store
 Thumbs.db
+log_back.txt
+log_front.txt

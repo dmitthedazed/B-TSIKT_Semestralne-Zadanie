@@ -2,6 +2,8 @@ package com.combined.frontend.controller;
 
 import com.combined.backend.dto.GroupDto;
 import com.combined.frontend.service.ApiService;
+import com.combined.frontend.service.NotificationAware;
+import com.combined.frontend.service.NotificationService;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,7 +17,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-public class GroupsController implements BaseController {
+public class GroupsController implements BaseController, NotificationAware {
 
     @FXML private TabPane groupsTabPane; // New TabPane for My Groups and All Groups
     @FXML private TableView<GroupDto> myGroupsTable;
@@ -39,6 +41,8 @@ public class GroupsController implements BaseController {
     private Long currentUserId;
     private String currentNickname;
     private MainController mainController;
+    private NotificationService notificationService;
+    private boolean subscribedOnce = false;
 
     private final ObservableList<GroupDto> myGroupsData = FXCollections.observableArrayList();
     private final ObservableList<GroupDto> allGroupsData = FXCollections.observableArrayList();
@@ -58,6 +62,11 @@ public class GroupsController implements BaseController {
     @Override
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+    }
+
+    @Override
+    public void setNotificationService(NotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 
     @FXML
@@ -204,6 +213,16 @@ public class GroupsController implements BaseController {
         loadAllGroups();
     }
 
+    private boolean handleUnauthorized(Exception e, String context) {
+        if (e.getMessage() != null && e.getMessage().toLowerCase().contains("unauthorized")) {
+            if (mainController != null) {
+                mainController.handleUnauthorized(context);
+            }
+            return true;
+        }
+        return false;
+    }
+
     private void loadMyGroups() {
         if (apiService == null || currentUserId == null) {
             statusLabel.setStyle("-fx-text-fill: orange;");
@@ -220,10 +239,22 @@ public class GroupsController implements BaseController {
 
                 Platform.runLater(() -> {
                     myGroupsData.setAll(groupList);
+                    if (notificationService != null) {
+                        if (subscribedOnce) {
+                            // skip re-subscribing on subsequent refreshes
+                        } else {
+                            subscribedOnce = true;
+                            groupList.stream()
+                                    .map(GroupDto::getId)
+                                    .filter(id -> id != null)
+                                    .forEach(notificationService::subscribeToGroup); // ensure subscriptions exist for global handler
+                        }
+                    }
                     statusLabel.setStyle("-fx-text-fill: green;");
                     statusLabel.setText("Loaded " + groupList.size() + " of my groups.");
                 });
             } catch (Exception e) {
+                if (handleUnauthorized(e, "groups")) return;
                 Platform.runLater(() -> {
                     statusLabel.setStyle("-fx-text-fill: red;");
                     statusLabel.setText("Error loading my groups: " + e.getMessage());
@@ -244,7 +275,7 @@ public class GroupsController implements BaseController {
 
         new Thread(() -> {
             try {
-                List<GroupDto> allGroups = apiService.getAllGroupsWithMembershipFlag(currentUserId);
+                List<GroupDto> allGroups = apiService.getAllGroupsWithMembershipFlag();
                 List<GroupDto> nonMemberGroups = allGroups.stream()
                         .filter(g -> !g.getIsMember())
                         .toList();
@@ -255,6 +286,7 @@ public class GroupsController implements BaseController {
                     statusLabel.setText("Loaded " + nonMemberGroups.size() + " available groups.");
                 });
             } catch (Exception e) {
+                if (handleUnauthorized(e, "groups")) return;
                 Platform.runLater(() -> {
                     statusLabel.setStyle("-fx-text-fill: red;");
                     statusLabel.setText("Error loading all groups: " + e.getMessage());

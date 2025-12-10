@@ -23,8 +23,9 @@ public class ActivityLogController {
 
     @GetMapping("/group/{groupId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<ActivityLog>> getGroupActivityLogs(@PathVariable Long groupId) {
-        return ResponseEntity.ok(activityLogService.getGroupActivityLogs(groupId));
+    public ResponseEntity<List<ActivityLog>> getGroupActivityLogs(@PathVariable Long groupId,
+                                                                  @AuthenticationPrincipal CustomUserDetails userDetails) {
+        return ResponseEntity.ok(activityLogService.getGroupActivityLogs(groupId, userDetails.getUserId()));
     }
 
     @GetMapping("/user/me")
