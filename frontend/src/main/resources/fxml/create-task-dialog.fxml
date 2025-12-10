@@ -12,20 +12,25 @@
     <content>
         <VBox spacing="10">
             <GridPane hgap="10" vgap="10">
-                <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <columnConstraints>
+                    <ColumnConstraints minWidth="110" halignment="RIGHT"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <Label text="Title" style="-fx-text-fill: #444; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                 <TextField fx:id="titleField" promptText="Enter task title" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-                <Label text="Description:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <Label text="Description" style="-fx-text-fill: #444; -fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                 <TextArea fx:id="descriptionField" promptText="Enter task description" GridPane.rowIndex="1" GridPane.columnIndex="1"
                           prefRowCount="3" wrapText="true"/>
 
-                <Label text="Status:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <Label text="Status" style="-fx-text-fill: #444; -fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
                 <ComboBox fx:id="statusComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-                <Label text="Assigned to:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <Label text="Assigned to" style="-fx-text-fill: #444; -fx-font-weight: bold;" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
                 <ComboBox fx:id="assignedToComboBox" GridPane.rowIndex="3" GridPane.columnIndex="1" promptText="Unassigned"/>
 
-                <Label text="Deadline:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <Label text="Deadline" style="-fx-text-fill: #444; -fx-font-weight: bold;" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
                 <DatePicker fx:id="deadlinePicker" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
             </GridPane>
             <Label fx:id="errorMessageLabel" textFill="red" wrapText="true"/>

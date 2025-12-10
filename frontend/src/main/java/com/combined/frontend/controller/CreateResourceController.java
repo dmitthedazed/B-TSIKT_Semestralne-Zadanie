@@ -9,6 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import javafx.event.ActionEvent;
+import javafx.scene.control.Control;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -22,9 +23,11 @@ public class CreateResourceController {
 
     private ApiService apiService;
     private Long groupId;
+    private MainController mainController;
     private ResourceDto newResource;
     private ResourceDto resourceToEdit; // To hold the resource being edited
     private String filePath;
+    private boolean saved;
 
     public void setApiService(ApiService apiService) {
         this.apiService = apiService;
@@ -32,6 +35,10 @@ public class CreateResourceController {
 
     public void setGroupId(Long groupId) {
         this.groupId = groupId;
+    }
+
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
     }
 
     public void setResourceToEdit(ResourceDto resource) {
@@ -53,6 +60,10 @@ public class CreateResourceController {
 
     public String getLastErrorMessage() {
         return errorMessageLabel == null ? "" : errorMessageLabel.getText();
+    }
+
+    public boolean wasSaved() {
+        return saved;
     }
 
     @FXML
@@ -81,24 +92,26 @@ public class CreateResourceController {
     }
 
     private boolean saveResource(Long resourceId) {
+        saved = false;
+        clearValidation();
         String title = titleField.getText();
         String url = urlField.getText();
         String description = descriptionField.getText();
 
         if (title == null || title.trim().isEmpty()) {
-            errorMessageLabel.setText("Resource title cannot be empty.");
+            markInvalid(titleField, "Resource title cannot be empty.");
             return false;
         }
         boolean hasFile = filePath != null && !filePath.isBlank();
         boolean hasUrl = url != null && !url.trim().isEmpty();
 
         if (!hasFile && !hasUrl) {
-            errorMessageLabel.setText("Provide a URL or choose a file.");
+            markInvalid(urlField, "Provide a URL or choose a file.");
             return false;
         }
         // Basic URL validation when provided
         if (hasUrl && !url.matches("^(http|https)://.*$")) {
-            errorMessageLabel.setText("URL must start with http:// or https://");
+            markInvalid(urlField, "URL must start with http:// or https://");
             return false;
         }
 
@@ -124,11 +137,39 @@ public class CreateResourceController {
                     newResource = apiService.updateResource(resourceId, resourceToSave);
                 }
             }
+            saved = true;
             return true;
         } catch (Exception e) {
-            errorMessageLabel.setText("Failed to save resource: " + e.getMessage());
+            String msg = "Failed to save resource: " + e.getMessage();
+            errorMessageLabel.setText(msg);
+            if (mainController != null) {
+                mainController.showToast(msg);
+            }
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private void clearValidation() {
+        if (errorMessageLabel != null) errorMessageLabel.setText("");
+        resetStyle(titleField);
+        resetStyle(urlField);
+        resetStyle(filePathField);
+        resetStyle(descriptionField);
+    }
+
+    private void resetStyle(Control c) {
+        if (c != null) c.setStyle("");
+    }
+
+    private void markInvalid(Control c, String message) {
+        if (c != null) {
+            c.setStyle("-fx-border-color: #d9534f; -fx-border-radius: 4; -fx-background-radius: 4;");
+            c.requestFocus();
+        }
+        if (errorMessageLabel != null) errorMessageLabel.setText(message);
+        if (mainController != null) {
+            mainController.showToast(message);
         }
     }
 }

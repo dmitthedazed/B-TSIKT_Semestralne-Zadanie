@@ -60,6 +60,18 @@ mvn -pl frontend javafx:run
 ```
 Requires Java 21+, Maven, SQLite DB file auto-created.
 
+### Demo mode (separate backend, seeded data)
+- Backend (in‑memory H2, port 8081): `cd backend && mvn spring-boot:run "-Dspring-boot.run.profiles=demo"`
+- Frontend pointed to demo API: run with `-DAPI_BASE_URL=http://localhost:8081/api` or click the “Try demo” button (auto-switches to demo base URL and fills `demo@example.com` / `demo123`).
+- Demo data: multiple seeded teachers, courses, students, tasks, resources, and 90 days of activity logs for stats.
+
+## Recent frontend improvements
+- Groups: table replaced by responsive cards (open/join buttons, owner, members/tasks badges, hover animation).
+- Tasks/Resources/Members: table views replaced with list-style cards for better readability.
+- Group detail: Overview tab now includes resources and stats; stats charts pulled into overview.
+- Auth: login errors show bottom toast; “Try demo” auto-targets the demo backend and fills demo creds.
+- UI polish: sidebar enlarged with icons; top bar greeting now time-based and uses first name.
+
 ## Security & access checks
 - JWT for all calls; controllers consume `@AuthenticationPrincipal`.
 - Membership/creator guard on tasks, resources, memberships, group stats, group activity logs.

@@ -14,6 +14,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.event.ActionEvent;
 
 import java.io.IOException;
 import java.util.List;
@@ -109,19 +110,26 @@ public class MembersController implements BaseController {
             addMemberController.setApiService(apiService);
             addMemberController.setGroupId(currentGroup.getId());
             addMemberController.setGroupName(currentGroup.getName());
+            addMemberController.setMainController(mainController);
 
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setDialogPane(dialogPane);
             dialog.setTitle("Add Member to " + currentGroup.getName());
-            dialog.setResultConverter(buttonType -> {
-                if (buttonType.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-                    return addMemberController.processResult() ? buttonType : null; // null keeps dialog open on failure
-                }
-                return buttonType;
-            });
+            dialogPane.getButtonTypes().stream()
+                    .filter(bt -> bt.getButtonData() == ButtonBar.ButtonData.OK_DONE)
+                    .findFirst()
+                    .ifPresent(okType -> {
+                        Button okButton = (Button) dialogPane.lookupButton(okType);
+                        okButton.addEventFilter(ActionEvent.ACTION, evt -> {
+                            boolean ok = addMemberController.processResult();
+                            if (!ok) {
+                                evt.consume();
+                            }
+                        });
+                    });
 
-            Optional<ButtonType> result = dialog.showAndWait();
-            if (result.isPresent() && result.get().getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+            dialog.showAndWait();
+            if (addMemberController.wasSaved()) {
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Member added successfully!");
                 loadGroupMembers(); // Refresh list
             }

@@ -12,10 +12,15 @@
     <content>
         <VBox spacing="10">
             <GridPane hgap="10" vgap="10">
-                <Label text="Group Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <columnConstraints>
+                    <ColumnConstraints minWidth="110" halignment="RIGHT"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <Label text="Group name" style="-fx-text-fill: #444; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                 <TextField fx:id="groupNameField" promptText="Enter group name" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-                <Label text="Description:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <Label text="Description" style="-fx-text-fill: #444; -fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                 <TextArea fx:id="groupDescriptionField" promptText="Enter group description" GridPane.rowIndex="1" GridPane.columnIndex="1"
                           prefRowCount="3" wrapText="true"/>
             </GridPane>

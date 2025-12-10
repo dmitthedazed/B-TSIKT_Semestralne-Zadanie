@@ -93,7 +93,7 @@ public class OverviewController implements BaseController {
                         .filter(task -> task.getDeadline() != null && task.getDeadline().isAfter(LocalDateTime.now()))
                         .sorted(Comparator.comparing(TaskDto::getDeadline))
                         .limit(5)
-                        .map(task -> task.getTitle() + " (Due: " + task.getDeadline().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + ")")
+                        .map(task -> task.getTitle() + " (Due: " + task.getDeadline().toLocalDate() + ")")
                         .collect(Collectors.toList());
 
                 // Fetch group statistics

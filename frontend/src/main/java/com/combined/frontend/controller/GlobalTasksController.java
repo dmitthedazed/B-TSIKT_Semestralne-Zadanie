@@ -14,6 +14,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.util.StringConverter;
+import javafx.event.ActionEvent;
 
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
@@ -281,22 +282,27 @@ public class GlobalTasksController implements BaseController {
             controller.setApiService(apiService);
             controller.setGroupId(task.getGroupId());
             controller.setTaskToEdit(task);
+            controller.setMainController(mainController);
 
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setDialogPane(pane);
             dialog.setTitle("Edit task: " + task.getTitle());
 
-            Optional<ButtonType> result = dialog.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK) {
+            Button okButton = (Button) pane.lookupButton(ButtonType.OK);
+            okButton.addEventFilter(ActionEvent.ACTION, evt -> {
                 boolean ok = controller.processEditResult(task.getId());
-                if (ok) {
-                    loadTasks();
-                } else {
-                    String reason = controller.getLastErrorMessage();
-                    String message = (reason == null || reason.isBlank())
-                            ? "Failed to save changes."
-                            : reason;
-                    showAlert(Alert.AlertType.ERROR, "Edit task", message);
+                if (!ok) {
+                    evt.consume();
+                }
+            });
+
+            dialog.showAndWait();
+            if (controller.wasSaved()) {
+                loadTasks();
+            } else {
+                String reason = controller.getLastErrorMessage();
+                if (reason != null && !reason.isBlank()) {
+                    showAlert(Alert.AlertType.ERROR, "Edit task", reason);
                 }
             }
         } catch (IOException e) {

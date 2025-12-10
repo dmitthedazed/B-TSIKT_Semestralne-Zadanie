@@ -17,19 +17,19 @@
                     <ColumnConstraints hgrow="ALWAYS"/>
                 </columnConstraints>
 
-                <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <Label text="Title" style="-fx-text-fill: #444; -fx-font-weight: bold;" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                 <TextField fx:id="titleField" promptText="Enter resource title" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-                <Label text="URL:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <Label text="URL" style="-fx-text-fill: #444; -fx-font-weight: bold;" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                 <TextField fx:id="urlField" promptText="Enter resource URL" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-                <Label text="File:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <Label text="File" style="-fx-text-fill: #444; -fx-font-weight: bold;" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
                 <HBox spacing="8" GridPane.rowIndex="2" GridPane.columnIndex="1">
                     <TextField fx:id="filePathField" promptText="No file selected" editable="false" HBox.hgrow="ALWAYS"/>
                     <Button text="Browse..." onAction="#handleBrowseFile"/>
                 </HBox>
 
-                <Label text="Description:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <Label text="Description" style="-fx-text-fill: #444; -fx-font-weight: bold;" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
                 <TextArea fx:id="descriptionField" promptText="Optional description" prefRowCount="2" wrapText="true" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
             </GridPane>
             <Label fx:id="errorMessageLabel" textFill="red" wrapText="true"/>

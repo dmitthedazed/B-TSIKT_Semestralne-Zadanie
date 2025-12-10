@@ -275,7 +275,7 @@ public class MainController {
         showToast(text);
     }
 
-    private void showToast(String text) {
+    public void showToast(String text) {
         Platform.runLater(() -> {
             attachToastLayer(); // ensure overlay survives view swaps
             Label label = new Label(text);

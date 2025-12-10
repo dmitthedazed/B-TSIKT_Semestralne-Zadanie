@@ -16,6 +16,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Insets;
+import javafx.event.ActionEvent;
 import java.awt.Desktop;
 import java.net.URI;
 import java.nio.file.Paths;
@@ -105,22 +106,28 @@ public class ResourcesController implements BaseController {
             CreateResourceController createResourceController = loader.getController();
             createResourceController.setApiService(apiService);
             createResourceController.setGroupId(currentlySelectedGroup.getId());
+            createResourceController.setMainController(mainController);
 
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setDialogPane(dialogPane);
             dialog.setTitle("Create New Resource for " + currentlySelectedGroup.getName());
 
-            Optional<ButtonType> result = dialog.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                if (createResourceController.processResult()) {
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Resource created successfully!");
-                    loadResourcesForGroup(currentlySelectedGroup.getId()); // Refresh list
-                } else {
-                    String reason = createResourceController.getLastErrorMessage();
-                    String message = (reason == null || reason.isBlank())
-                            ? "Failed to create resource."
-                            : reason;
-                    showAlert(Alert.AlertType.ERROR, "Error", message);
+            Button okButton = (Button) dialogPane.lookupButton(ButtonType.OK);
+            okButton.addEventFilter(ActionEvent.ACTION, evt -> {
+                boolean ok = createResourceController.processResult();
+                if (!ok) {
+                    evt.consume();
+                }
+            });
+
+            dialog.showAndWait();
+            if (createResourceController.wasSaved()) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Resource created successfully!");
+                loadResourcesForGroup(currentlySelectedGroup.getId()); // Refresh list
+            } else {
+                String reason = createResourceController.getLastErrorMessage();
+                if (reason != null && !reason.isBlank()) {
+                    showAlert(Alert.AlertType.ERROR, "Error", reason);
                 }
             }
         } catch (IOException e) {
@@ -141,22 +148,28 @@ public class ResourcesController implements BaseController {
             editResourceController.setApiService(apiService);
             editResourceController.setGroupId(currentlySelectedGroup.getId());
             editResourceController.setResourceToEdit(resource); // New method to pre-fill form
+            editResourceController.setMainController(mainController);
 
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setDialogPane(dialogPane);
             dialog.setTitle("Edit Resource: " + resource.getTitle());
 
-            Optional<ButtonType> result = dialog.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                if (editResourceController.processEditResult(resource.getId())) { // New method for processing edit
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Resource updated successfully!");
-                    loadResourcesForGroup(currentlySelectedGroup.getId()); // Refresh list
-                } else {
-                    String reason = editResourceController.getLastErrorMessage();
-                    String message = (reason == null || reason.isBlank())
-                            ? "Failed to update resource."
-                            : reason;
-                    showAlert(Alert.AlertType.ERROR, "Error", message);
+            Button okButton = (Button) dialogPane.lookupButton(ButtonType.OK);
+            okButton.addEventFilter(ActionEvent.ACTION, evt -> {
+                boolean ok = editResourceController.processEditResult(resource.getId());
+                if (!ok) {
+                    evt.consume();
+                }
+            });
+
+            dialog.showAndWait();
+            if (editResourceController.wasSaved()) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Resource updated successfully!");
+                loadResourcesForGroup(currentlySelectedGroup.getId()); // Refresh list
+            } else {
+                String reason = editResourceController.getLastErrorMessage();
+                if (reason != null && !reason.isBlank()) {
+                    showAlert(Alert.AlertType.ERROR, "Error", reason);
                 }
             }
         } catch (IOException e) {
@@ -315,6 +328,10 @@ public class ResourcesController implements BaseController {
             content.getChildren().addAll(title, meta, desc, actions);
             content.setPadding(new Insets(10));
             content.setStyle("-fx-background-color: -fx-control-inner-background; -fx-border-color: -fx-box-border; -fx-border-radius: 6; -fx-background-radius: 6;");
+            content.setFillWidth(true);
+            if (resourcesListView != null) {
+                content.prefWidthProperty().bind(resourcesListView.widthProperty().subtract(30));
+            }
             openButton.setOnAction(e -> {
                 ResourceDto res = getItem();
                 if (res != null) handleOpenOrDownload(res);
@@ -334,17 +351,25 @@ public class ResourcesController implements BaseController {
             super.updateItem(res, empty);
             if (empty || res == null) {
                 setGraphic(null);
+                setText(null);
             } else {
+                title.setStyle("-fx-text-fill: #1d1d1f; -fx-font-weight: bold;");
+                meta.setStyle("-fx-text-fill: #4a4a4a;");
+                desc.setStyle("-fx-text-fill: #2f2f2f;");
                 String type = res.getType() == null ? "" : res.getType().toUpperCase();
                 title.setText(res.getTitle() + " (" + type + ")");
                 meta.setText((res.getPathOrUrl() == null ? "" : res.getPathOrUrl()) +
-                        (res.getUploadedByName() == null ? "" : " · " + res.getUploadedByName()));
+                        (res.getUploadedByName() == null ? "" : " | " + res.getUploadedByName()));
                 desc.setText(res.getDescription() == null ? "" : res.getDescription());
                 boolean isFile = type.equals("FILE");
                 openButton.setText(isFile ? "Download" : "Open Link");
                 boolean canModify = canModifyResource(res);
                 editButton.setDisable(!canModify);
                 deleteButton.setDisable(!canModify);
+                if (getListView() != null) {
+                    content.prefWidthProperty().bind(getListView().widthProperty().subtract(30));
+                }
+                setText(null);
                 setGraphic(content);
             }
         }

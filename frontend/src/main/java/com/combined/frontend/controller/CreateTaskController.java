@@ -7,6 +7,7 @@ import javafx.application.Platform; // New import
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.Control;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,12 +25,18 @@ public class CreateTaskController {
     @FXML private Label errorMessageLabel;
 
     private ApiService apiService;
+    private MainController mainController;
     private Long groupId;
     private TaskDto newTask;
     private TaskDto taskToEdit; // To hold the task being edited
+    private boolean saved;
 
     public void setApiService(ApiService apiService) {
         this.apiService = apiService;
+    }
+
+    public void setMainController(MainController mainController) {
+        this.mainController = mainController;
     }
 
     public void setGroupId(Long groupId) {
@@ -65,6 +72,10 @@ public class CreateTaskController {
 
     public String getLastErrorMessage() {
         return errorMessageLabel == null ? "" : errorMessageLabel.getText();
+    }
+
+    public boolean wasSaved() {
+        return saved;
     }
 
     @FXML
@@ -128,6 +139,8 @@ public class CreateTaskController {
     }
 
     private boolean saveTask(Long taskId) {
+        saved = false;
+        clearValidationStyles();
         String title = titleField.getText();
         String description = descriptionField.getText();
         String status = statusComboBox.getValue();
@@ -135,23 +148,23 @@ public class CreateTaskController {
         MemberWithRoleDto assignedTo = assignedToComboBox.getValue();
 
         if (title == null || title.trim().isEmpty()) {
-            errorMessageLabel.setText("Task title cannot be empty.");
+            markInvalid(titleField, "Task title cannot be empty.");
             return false;
         }
         if (title.trim().length() < 3 || title.trim().length() > 150) {
-            errorMessageLabel.setText("Title must be between 3 and 150 characters.");
+            markInvalid(titleField, "Title must be between 3 and 150 characters.");
             return false;
         }
         if (description != null && description.trim().length() > 500) {
-            errorMessageLabel.setText("Description cannot exceed 500 characters.");
+            markInvalid(descriptionField, "Description cannot exceed 500 characters.");
             return false;
         }
         if (status == null || status.trim().isEmpty()) {
-            errorMessageLabel.setText("Task status cannot be empty.");
+            markInvalid(statusComboBox, "Task status cannot be empty.");
             return false;
         }
         if (deadlineDate == null) {
-            errorMessageLabel.setText("Task deadline cannot be empty.");
+            markInvalid(deadlinePicker, "Task deadline cannot be empty.");
             return false;
         }
 
@@ -169,11 +182,38 @@ public class CreateTaskController {
             } else { // Update
                 newTask = apiService.updateTask(taskId, taskToSave);
             }
+            saved = true;
             return true;
         } catch (Exception e) {
             errorMessageLabel.setText("Failed to save task: " + e.getMessage());
+            if (mainController != null) {
+                mainController.showToast("Failed to save task: " + e.getMessage());
+            }
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private void clearValidationStyles() {
+        if (errorMessageLabel != null) errorMessageLabel.setText("");
+        resetStyle(titleField);
+        resetStyle(descriptionField);
+        resetStyle(statusComboBox);
+        resetStyle(deadlinePicker);
+    }
+
+    private void resetStyle(Control control) {
+        if (control != null) control.setStyle("");
+    }
+
+    private void markInvalid(Control control, String message) {
+        if (control != null) {
+            control.setStyle("-fx-border-color: #d9534f; -fx-border-radius: 4; -fx-background-radius: 4;");
+            control.requestFocus();
+        }
+        if (errorMessageLabel != null) errorMessageLabel.setText(message);
+        if (mainController != null) {
+            mainController.showToast(message);
         }
     }
 }

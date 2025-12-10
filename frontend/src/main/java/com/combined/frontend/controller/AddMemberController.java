@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Control;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -21,6 +22,8 @@ public class AddMemberController {
     private ApiService apiService;
     private Long groupId;
     private String groupName;
+    private MainController mainController;
+    private boolean saved;
 
     public void setApiService(ApiService apiService) {
         this.apiService = apiService;
@@ -30,6 +33,8 @@ public class AddMemberController {
         this.groupId = groupId;
     }
     public void setGroupName(String groupName) { this.groupName = groupName; }
+    public void setMainController(MainController mainController) { this.mainController = mainController; }
+    public boolean wasSaved() { return saved; }
 
     @FXML
     private void initialize() {
@@ -37,6 +42,8 @@ public class AddMemberController {
     }
 
     public boolean processResult() {
+        saved = false;
+        clearValidation();
         String single = userEmailField.getText();
         String multi = advancedIdentifiersField != null ? advancedIdentifiersField.getText() : "";
 
@@ -52,7 +59,7 @@ public class AddMemberController {
         }
 
         if (identifiers.isEmpty()) {
-            errorMessageLabel.setText("Please enter at least one email/nickname.");
+            markInvalid(userEmailField, "Please enter at least one email/nickname.");
             return false;
         }
 
@@ -90,12 +97,14 @@ public class AddMemberController {
                 warn.setHeaderText("Some users were added, some failed");
                 warn.setContentText(errors.toString());
                 warn.showAndWait();
+                if (mainController != null) mainController.showToast(errors.toString());
             } else {
                 Alert err = new Alert(Alert.AlertType.ERROR);
                 err.setTitle("Failed to add members");
                 err.setHeaderText("No users were added");
                 err.setContentText(errors.toString());
                 err.showAndWait();
+                if (mainController != null) mainController.showToast(errors.toString());
             }
         } else {
             errorMessageLabel.setText("");
@@ -106,7 +115,28 @@ public class AddMemberController {
             info.setHeaderText("Added to " + groupLabel);
             info.setContentText("Users: " + added);
             info.showAndWait();
+            if (mainController != null) mainController.showToast("Members added: " + added);
+            saved = true;
         }
         return anySuccess;
+    }
+
+    private void clearValidation() {
+        if (errorMessageLabel != null) errorMessageLabel.setText("");
+        resetStyle(userEmailField);
+        resetStyle(advancedIdentifiersField);
+    }
+
+    private void resetStyle(Control c) {
+        if (c != null) c.setStyle("");
+    }
+
+    private void markInvalid(Control c, String message) {
+        if (c != null) {
+            c.setStyle("-fx-border-color: #d9534f; -fx-border-radius: 4; -fx-background-radius: 4;");
+            c.requestFocus();
+        }
+        if (errorMessageLabel != null) errorMessageLabel.setText(message);
+        if (mainController != null) mainController.showToast(message);
     }
 }

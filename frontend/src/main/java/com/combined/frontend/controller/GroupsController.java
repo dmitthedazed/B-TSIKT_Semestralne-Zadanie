@@ -16,6 +16,7 @@ import javafx.geometry.Insets;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.paint.Color;
 import javafx.animation.ScaleTransition;
+import javafx.event.ActionEvent;
 
 import java.io.IOException;
 import java.util.List;
@@ -86,22 +87,28 @@ public class GroupsController implements BaseController, NotificationAware {
             DialogPane dialogPane = loader.load();
             CreateGroupController createGroupController = loader.getController();
             createGroupController.setApiService(apiService);
+            createGroupController.setMainController(mainController);
 
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setDialogPane(dialogPane);
             dialog.setTitle("Create New Group");
 
-            Optional<ButtonType> result = dialog.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                if (createGroupController.processResult()) {
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Group created successfully!");
-                    loadGroups(); // Refresh all group lists
-                } else {
-                    String reason = createGroupController.getLastErrorMessage();
-                    String message = (reason == null || reason.isBlank())
-                            ? "Failed to create group. No details were provided."
-                            : reason;
-                    showAlert(Alert.AlertType.ERROR, "Error", message);
+            Button okButton = (Button) dialogPane.lookupButton(ButtonType.OK);
+            okButton.addEventFilter(ActionEvent.ACTION, evt -> {
+                boolean ok = createGroupController.processResult();
+                if (!ok) {
+                    evt.consume();
+                }
+            });
+
+            dialog.showAndWait();
+            if (createGroupController.wasSaved()) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Group created successfully!");
+                loadGroups(); // Refresh all group lists
+            } else {
+                String reason = createGroupController.getLastErrorMessage();
+                if (reason != null && !reason.isBlank()) {
+                    showAlert(Alert.AlertType.ERROR, "Error", reason);
                 }
             }
         } catch (IOException e) {

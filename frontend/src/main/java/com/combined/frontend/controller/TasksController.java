@@ -13,9 +13,11 @@ import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Insets;
+import javafx.event.ActionEvent;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,6 +39,7 @@ public class TasksController implements BaseController {
 
     private final ObservableList<TaskDto> tasksData = FXCollections.observableArrayList();
     private List<TaskDto> allTasksInGroup; // To store all tasks for filtering
+    private static final DateTimeFormatter DATE_ONLY = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Override
     public void setApiService(ApiService apiService) {
@@ -105,23 +108,24 @@ public class TasksController implements BaseController {
             CreateTaskController createTaskController = loader.getController();
             createTaskController.setApiService(apiService);
             createTaskController.setGroupId(currentlySelectedGroup.getId());
+            createTaskController.setMainController(mainController);
 
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setDialogPane(dialogPane);
             dialog.setTitle("Create New Task for " + currentlySelectedGroup.getName());
 
-            Optional<ButtonType> result = dialog.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                if (createTaskController.processResult()) {
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Task created successfully!");
-                    loadTasksForGroup(currentlySelectedGroup.getId()); // Refresh list
-                } else {
-                    String reason = createTaskController.getLastErrorMessage();
-                    String message = (reason == null || reason.isBlank())
-                            ? "Failed to create task."
-                            : reason;
-                    showAlert(Alert.AlertType.ERROR, "Error", message);
+            Button okButton = (Button) dialogPane.lookupButton(ButtonType.OK);
+            okButton.addEventFilter(ActionEvent.ACTION, evt -> {
+                boolean ok = createTaskController.processResult();
+                if (!ok) {
+                    evt.consume(); // keep dialog open on validation failure
                 }
+            });
+
+            dialog.showAndWait();
+            if (createTaskController.wasSaved()) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Task created successfully!");
+                loadTasksForGroup(currentlySelectedGroup.getId()); // Refresh list
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -137,23 +141,24 @@ public class TasksController implements BaseController {
             editTaskController.setApiService(apiService);
             editTaskController.setGroupId(currentlySelectedGroup.getId());
             editTaskController.setTaskToEdit(task); // New method to pre-fill form
+            editTaskController.setMainController(mainController);
 
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setDialogPane(dialogPane);
             dialog.setTitle("Edit Task: " + task.getTitle());
 
-            Optional<ButtonType> result = dialog.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK) {
-                if (editTaskController.processEditResult(task.getId())) { // New method for processing edit
-                    showAlert(Alert.AlertType.INFORMATION, "Success", "Task updated successfully!");
-                    loadTasksForGroup(currentlySelectedGroup.getId()); // Refresh list
-                } else {
-                    String reason = editTaskController.getLastErrorMessage();
-                    String message = (reason == null || reason.isBlank())
-                            ? "Failed to update task."
-                            : reason;
-                    showAlert(Alert.AlertType.ERROR, "Error", message);
+            Button okButton = (Button) dialogPane.lookupButton(ButtonType.OK);
+            okButton.addEventFilter(ActionEvent.ACTION, evt -> {
+                boolean ok = editTaskController.processEditResult(task.getId());
+                if (!ok) {
+                    evt.consume(); // keep dialog open
                 }
+            });
+
+            dialog.showAndWait();
+            if (editTaskController.wasSaved()) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Task updated successfully!");
+                loadTasksForGroup(currentlySelectedGroup.getId()); // Refresh list
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -253,6 +258,7 @@ public class TasksController implements BaseController {
             content.getChildren().addAll(title, meta, desc, actions);
             content.setPadding(new Insets(10));
             content.setStyle("-fx-background-color: -fx-control-inner-background; -fx-border-color: -fx-box-border; -fx-border-radius: 6; -fx-background-radius: 6;");
+            content.setFillWidth(true);
             editButton.setOnAction(e -> {
                 TaskDto task = getItem();
                 if (task != null) handleEditTask(task);
@@ -268,12 +274,20 @@ public class TasksController implements BaseController {
             super.updateItem(task, empty);
             if (empty || task == null) {
                 setGraphic(null);
+                setText(null);
             } else {
+                title.setStyle("-fx-text-fill: #1d1d1f; -fx-font-weight: bold;");
+                meta.setStyle("-fx-text-fill: #4a4a4a;");
+                desc.setStyle("-fx-text-fill: #2f2f2f;");
                 title.setText(task.getTitle() + " (" + task.getStatus() + ")");
                 String assignee = task.getAssignedToName() == null ? "Unassigned" : task.getAssignedToName();
-                String deadline = task.getDeadline() == null ? "" : " · Due: " + task.getDeadline();
+                String deadline = task.getDeadline() == null ? "" : " · Due: " + task.getDeadline().format(DATE_ONLY);
                 meta.setText("Assignee: " + assignee + deadline);
                 desc.setText(task.getDescription() == null ? "" : task.getDescription());
+                if (getListView() != null) {
+                    content.prefWidthProperty().bind(getListView().widthProperty().subtract(30));
+                }
+                setText(null);
                 setGraphic(content);
             }
         }
