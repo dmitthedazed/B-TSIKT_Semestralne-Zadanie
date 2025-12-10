@@ -6,20 +6,30 @@
 
 *Moderný JavaFX desktopový klient + Spring Boot backend pre študijné skupiny*
 
+[![CI](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml/badge.svg)](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml)
+
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?style=for-the-badge&logo=java&logoColor=white)](https://openjfx.io/)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Google OAuth](https://img.shields.io/badge/Google%20OAuth-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/identity)
 [![License](https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge)](LICENSE)
 
 🇬🇧 [English](README.md) | 🇸🇰 **Slovenčina**
 
 [Funkcie](#-funkcie) •
 [Snímky obrazovky](#-snímky-obrazovky) •
+[Technológie](#️-technológie) •
 [Inštalácia](#-inštalácia) •
 [Použitie](#-použitie) •
+[Architektúra](#️-architektúra) •
 [API](#-api-referencia) •
-[Architektúra](#-architektúra)
+[WebSocket](#-websocket-udalosti) •
+[Štruktúra projektu](#-štruktúra-projektu) •
+[Bezpečnosť](#-bezpečnosť) •
+[Testovanie](#-testovanie) •
+[Použitie AI](#-použitie-ai) •
+[Autor](#-autor)
 
 </div>
 
@@ -73,9 +83,21 @@
 
 ### 🔐 Bezpečnosť
 - JWT autentifikácia
+- **Google OAuth 2.0** prihlásenie
 - Bezpečné hashovanie hesiel
 - Oprávnenia podľa rolí
 - Chránené API endpointy
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 🚀 CI/CD Pipeline
+- Automatizované testovanie cez GitHub Actions
+- Overenie buildu pri každom pushu
+- Kontrola kvality kódu
+- Kontinuálna integrácia
 
 </td>
 <td width="50%">

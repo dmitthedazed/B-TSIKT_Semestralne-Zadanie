@@ -6,20 +6,30 @@
 
 *A modern JavaFX desktop client + Spring Boot backend for collaborative study groups*
 
+[![CI](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml/badge.svg)](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml)
+
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?style=for-the-badge&logo=java&logoColor=white)](https://openjfx.io/)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Google OAuth](https://img.shields.io/badge/Google%20OAuth-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/identity)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 🇬🇧 **English** | 🇸🇰 [Slovenčina](README.sk.md)
 
 [Features](#-features) •
 [Screenshots](#-screenshots) •
+[Tech Stack](#️-tech-stack) •
 [Installation](#-installation) •
 [Usage](#-usage) •
+[Architecture](#️-architecture) •
 [API](#-api-reference) •
-[Architecture](#-architecture)
+[WebSocket](#websocket-events) •
+[Project Structure](#-project-structure) •
+[Security](#-security) •
+[Testing](#testing) •
+[AI Assistance](#-ai-assistance) •
+[Author](#-author)
 
 </div>
 
@@ -73,9 +83,21 @@
 
 ### 🔐 Security
 - JWT-based authentication
+- **Google OAuth 2.0** sign-in
 - Secure password hashing
 - Role-based permissions
 - Protected API endpoints
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 🚀 CI/CD Pipeline
+- Automated testing with GitHub Actions
+- Build verification on every push
+- Code quality checks
+- Continuous integration
 
 </td>
 <td width="50%">
