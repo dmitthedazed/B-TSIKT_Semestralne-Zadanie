@@ -12,6 +12,8 @@
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
+🇬🇧 **English** | 🇸🇰 [Slovenčina](README.sk.md)
+
 [Features](#-features) •
 [Screenshots](#-screenshots) •
 [Installation](#-installation) •
@@ -128,9 +130,9 @@
 
 ### Prerequisites
 
-- ☕ **Java 21** or higher ([Download](https://adoptium.net/))
-- 📦 **Maven 3.8+** ([Download](https://maven.apache.org/download.cgi))
-- 💻 Git
+- **Java 21** or higher ([Download](https://adoptium.net/))
+- **Maven 3.8+** ([Download](https://maven.apache.org/download.cgi))
+- Git
 
 ### Quick Start
 
@@ -157,7 +159,7 @@ mvn -pl frontend javafx:run
 
 ### 🎮 Demo Mode
 
-Try the app instantly with pre-seeded data:
+Try the app instantly with pre-seeded data 
 
 ```bash
 # Start demo backend (H2 in-memory, port 8081)
@@ -377,7 +379,7 @@ erDiagram
 
 ---
 
-## 🔌 WebSocket Events
+## WebSocket Events
 
 Real-time notifications via STOMP over WebSocket:
 
@@ -396,27 +398,27 @@ Real-time notifications via STOMP over WebSocket:
 ## 📁 Project Structure
 
 ```
-📦 B-TSIKT_Semestralne-Zadanie
-├── 📂 backend/                    # Spring Boot backend
-│   ├── 📂 src/main/java/com/combined/backend/
-│   │   ├── 📂 config/             # Security, WebSocket config
-│   │   ├── 📂 controller/         # REST endpoints
-│   │   ├── 📂 dto/                # Data transfer objects
-│   │   ├── 📂 model/              # JPA entities
-│   │   ├── 📂 repository/         # Data access layer
-│   │   ├── 📂 service/            # Business logic
-│   │   └── 📄 BackendApplication.java
-│   └── 📂 src/main/resources/
-│       ├── 📄 application.properties
-│       └── 📄 application-demo.properties
-├── 📂 frontend/                   # JavaFX client
-│   ├── 📂 src/main/java/          # Controllers & services
-│   └── 📂 src/main/resources/
-│       ├── 📂 fxml/               # UI layouts
-│       ├── 📂 css/                # Stylesheets
-│       └── 📂 img/                # Images
-├── 📄 pom.xml                     # Parent POM
-└── 📄 README.md
+B-TSIKT_Semestralne-Zadanie
+├──  backend/                    # Spring Boot backend
+│   ├──  src/main/java/com/combined/backend/
+│   │   ├──  config/             # Security, WebSocket config
+│   │   ├──  controller/         # REST endpoints
+│   │   ├──  dto/                # Data transfer objects
+│   │   ├──  model/              # JPA entities
+│   │   ├──  repository/         # Data access layer
+│   │   ├──  service/            # Business logic
+│   │   └──  BackendApplication.java
+│   └──  src/main/resources/
+│       ├──  application.properties
+│       └──  application-demo.properties
+├──  frontend/                   # JavaFX client
+│   ├──  src/main/java/          # Controllers & services
+│   └──  src/main/resources/
+│       ├──  fxml/               # UI layouts
+│       ├──  css/                # Stylesheets
+│       └──  img/                # Images
+├──  pom.xml                     # Parent POM
+└──  README.md
 ```
 
 ---
@@ -437,11 +439,10 @@ Real-time notifications via STOMP over WebSocket:
 - ✅ **Creator**: Full control, cannot be removed/demoted
 - ✅ **Admin**: Manage members (except creator), manage resources/tasks
 - ✅ **Member**: View resources, manage own tasks
-- ❌ `CREATOR` role cannot be assigned to others
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run all tests
@@ -453,6 +454,22 @@ mvn -pl backend test
 # Run with coverage report
 mvn -pl backend test jacoco:report
 ```
+
+##  AI Assistance
+
+This project was developed with the assistance of AI tools, specifically **GitHub Copilot** and **Claude** (Anthropic). AI was used to:
+
+| Area | How AI Helped |
+|:---|:---|
+| **Code Generation** | Accelerating boilerplate code, DTOs, and repetitive patterns |
+| **Debugging** | Identifying issues and suggesting fixes for complex bugs |
+| **Code Review** | Suggesting improvements for code quality and best practices |
+| **Testing** | Helping write unit and integration tests |
+| **Architecture** | Discussing design patterns and architectural decisions |
+
+> ⚠️ **Important:** All AI-generated code was carefully reviewed, tested, and modified.AI served as a productivity tool, not a replacement for understanding and critical thinking.
+
+---
 
 ## 👨‍💻 Author
 
@@ -474,10 +491,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-<div align="center">
-
-**⭐ Star this repo if you found it helpful!**
-
-Made with ❤️ and ☕
-
-</div>
