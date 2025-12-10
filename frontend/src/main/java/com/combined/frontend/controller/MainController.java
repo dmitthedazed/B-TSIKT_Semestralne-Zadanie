@@ -1,7 +1,6 @@
 package com.combined.frontend.controller;
 
 import com.combined.backend.dto.GroupDto;
-import com.combined.backend.dto.UserDto;
 import com.combined.frontend.MainApp;
 import com.combined.frontend.service.ApiService;
 import com.combined.frontend.service.NotificationAware;
@@ -25,8 +24,6 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 import java.io.IOException;
-import java.time.LocalTime;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class MainController {
 
@@ -44,7 +41,6 @@ public class MainController {
     private ApiService apiService;
     private Long currentUserId;
     private String currentNickname;
-    private String currentFirstName;
     private GroupDto selectedGroup; // To hold the currently selected group
     private String activeViewPath;
     private NotificationService notificationService;
@@ -67,9 +63,7 @@ public class MainController {
     public void setCurrentUser(Long userId, String nickname) {
         this.currentUserId = userId;
         this.currentNickname = nickname;
-        this.currentFirstName = nickname;
-        updateGreetingLabel();
-        fetchAndSetFirstName(); // refresh with real profile name if available
+        usernameLabel.setText("Welcome, " + nickname + "!");
         System.out.println("MainController: Current user set to ID: " + userId + ", Nickname: " + nickname);
         // Load default view (e.g., My Groups) after user is set
         loadView("/fxml/groups-view.fxml", "My Groups");
@@ -95,42 +89,6 @@ public class MainController {
         // Set initial title
         sectionTitleLabel.setText("Dashboard");
         setupToastLayer();
-    }
-
-    private void updateGreetingLabel() {
-        if (usernameLabel == null) return;
-        String name = (currentFirstName != null && !currentFirstName.isBlank())
-                ? currentFirstName
-                : (currentNickname != null && !currentNickname.isBlank() ? currentNickname : "there");
-        String greeting = buildGreeting();
-        usernameLabel.setText(greeting + ", " + name + "!");
-    }
-
-    private String buildGreeting() {
-        // Small chance to add variety
-        if (ThreadLocalRandom.current().nextDouble() < 0.03) {
-            return "How is it going";
-        }
-        int hour = LocalTime.now().getHour();
-        if (hour >= 5 && hour < 12) return "Good morning";
-        if (hour >= 12 && hour < 17) return "Good afternoon";
-        if (hour >= 17 && hour < 22) return "Good evening";
-        return "Good night";
-    }
-
-    private void fetchAndSetFirstName() {
-        if (apiService == null) return;
-        new Thread(() -> {
-            try {
-                UserDto me = apiService.getCurrentUser();
-                if (me != null && me.getFirstName() != null && !me.getFirstName().isBlank()) {
-                    currentFirstName = me.getFirstName();
-                    Platform.runLater(this::updateGreetingLabel);
-                }
-            } catch (Exception ignored) {
-                // keep nickname fallback
-            }
-        }).start();
     }
 
     @FXML
@@ -230,13 +188,9 @@ public class MainController {
         try {
             Stage stage = (Stage) contentPane.getScene().getWindow(); // Use contentPane to get the stage
             FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/fxml/auth-view.fxml"));
-            Scene scene = new Scene(loader.load(), MainApp.AUTH_WIDTH, MainApp.AUTH_HEIGHT);
+            Scene scene = new Scene(loader.load(), 800, 600);
             stage.setScene(scene);
             stage.setTitle("Combined Study Platform - Welcome");
-            stage.setWidth(MainApp.AUTH_WIDTH);
-            stage.setHeight(MainApp.AUTH_HEIGHT);
-            stage.centerOnScreen();
-            stage.show();
         } catch (IOException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Logout Error", "Could not load login screen after logout.");
