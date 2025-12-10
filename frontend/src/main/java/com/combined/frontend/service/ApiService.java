@@ -7,6 +7,7 @@ import com.combined.backend.dto.TaskDto;
 import com.combined.backend.dto.UserDto;
 import com.combined.backend.dto.ResourceDto;
 import com.combined.backend.dto.GroupStatsDto;
+import com.combined.backend.dto.ActivityLogDto;
 import com.combined.frontend.dto.MemberWithRoleDto;
 import com.combined.backend.model.Membership; // New import
 import com.combined.backend.model.User;
@@ -262,6 +263,20 @@ public class ApiService {
             return objectMapper.readValue(response.body(), new TypeReference<List<TaskDto>>() {});
         } else {
             throw new RuntimeException("Failed to fetch my tasks: " + response.body());
+        }
+    }
+
+    public List<ActivityLogDto> getUserActivityLogs(Long userId, Integer days) throws Exception {
+        String path = "/activity/user/" + userId;
+        if (days != null) {
+            path += "?days=" + days;
+        }
+        HttpRequest request = authenticatedGetRequest(path);
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), new TypeReference<List<ActivityLogDto>>() {});
+        } else {
+            throw new RuntimeException("Failed to load activity logs: " + response.body());
         }
     }
 

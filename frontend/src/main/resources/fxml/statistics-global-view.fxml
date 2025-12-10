@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.combined.frontend.controller.GlobalStatisticsController"
+            prefWidth="960" prefHeight="640">
+
+    <top>
+        <VBox spacing="8" style="-fx-padding: 16;">
+            <Label text="Statistics" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Period:"/>
+                <ComboBox fx:id="periodComboBox" prefWidth="140"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <center>
+        <TabPane fx:id="tabPane">
+            <Tab text="My Activity" closable="false">
+                <ScrollPane fitToWidth="true" fitToHeight="true">
+                    <VBox spacing="16" style="-fx-padding: 16;">
+                        <HBox spacing="12">
+                            <VBox alignment="CENTER" spacing="4" style="-fx-background-color: #f1f5ff; -fx-padding: 10; -fx-border-color: #d7e3ff; -fx-border-radius: 6; -fx-background-radius: 6;">
+                                <Label text="Total actions" style="-fx-text-fill: #4a5568;"/>
+                                <Label fx:id="totalActionsLabel" text="0" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+                            </VBox>
+                            <VBox alignment="CENTER" spacing="4" style="-fx-background-color: #fef7e5; -fx-padding: 10; -fx-border-color: #f9dca6; -fx-border-radius: 6; -fx-background-radius: 6;">
+                                <Label text="Tasks created" style="-fx-text-fill: #4a5568;"/>
+                                <Label fx:id="tasksCreatedLabel" text="0" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+                            </VBox>
+                            <VBox alignment="CENTER" spacing="4" style="-fx-background-color: #ecfdf3; -fx-padding: 10; -fx-border-color: #c7f2d7; -fx-border-radius: 6; -fx-background-radius: 6;">
+                                <Label text="Tasks completed" style="-fx-text-fill: #4a5568;"/>
+                                <Label fx:id="tasksDoneLabel" text="0" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+                            </VBox>
+                            <VBox alignment="CENTER" spacing="4" style="-fx-background-color: #fff1f2; -fx-padding: 10; -fx-border-color: #fecdd3; -fx-border-radius: 6; -fx-background-radius: 6;">
+                                <Label text="Groups active" style="-fx-text-fill: #4a5568;"/>
+                                <Label fx:id="groupsActiveLabel" text="0" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+                            </VBox>
+                        </HBox>
+
+                        <Label text="Activity by day" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <LineChart fx:id="activityLineChart" prefHeight="260">
+                            <xAxis>
+                                <CategoryAxis label="Day"/>
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="Actions"/>
+                            </yAxis>
+                        </LineChart>
+
+                        <Label text="Top groups by my actions" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <TableView fx:id="topGroupsTable" prefHeight="240">
+                            <columns>
+                                <TableColumn fx:id="topGroupNameCol" text="Group" prefWidth="200"/>
+                                <TableColumn fx:id="topGroupActionsCol" text="Actions" prefWidth="100"/>
+                                <TableColumn fx:id="topGroupTasksCreatedCol" text="Tasks created" prefWidth="120"/>
+                                <TableColumn fx:id="topGroupTasksDoneCol" text="Tasks completed" prefWidth="140"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+
+            <Tab text="Tasks Overview" closable="false">
+                <ScrollPane fitToWidth="true" fitToHeight="true">
+                    <VBox spacing="16" style="-fx-padding: 16;">
+                        <HBox spacing="12" alignment="CENTER_LEFT">
+                            <Label text="Scope:"/>
+                            <ComboBox fx:id="scopeComboBox" prefWidth="180"/>
+                        </HBox>
+
+                        <HBox spacing="18">
+                            <PieChart fx:id="statusPieChart" prefWidth="320" prefHeight="260"/>
+                            <BarChart fx:id="tasksByGroupBarChart" prefWidth="420" prefHeight="260">
+                                <xAxis><CategoryAxis label="Group"/></xAxis>
+                                <yAxis><NumberAxis label="Tasks"/></yAxis>
+                            </BarChart>
+                        </HBox>
+
+                        <Label text="Overdue tasks" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <TableView fx:id="overdueTable" prefHeight="260">
+                            <columns>
+                                <TableColumn fx:id="overdueGroupCol" text="Group" prefWidth="150"/>
+                                <TableColumn fx:id="overdueTitleCol" text="Title" prefWidth="220"/>
+                                <TableColumn fx:id="overdueDeadlineCol" text="Deadline" prefWidth="140"/>
+                                <TableColumn fx:id="overdueStatusCol" text="Status" prefWidth="100"/>
+                                <TableColumn fx:id="overdueAssigneeCol" text="Assigned to" prefWidth="140"/>
+                            </columns>
+                        </TableView>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+
+            <Tab text="Groups Overview" closable="false">
+                <ScrollPane fitToWidth="true" fitToHeight="true">
+                    <VBox spacing="16" style="-fx-padding: 16;">
+                        <Label text="Groups summary" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <TableView fx:id="groupsTable" prefHeight="320">
+                            <columns>
+                                <TableColumn fx:id="groupNameCol" text="Group" prefWidth="170"/>
+                                <TableColumn fx:id="groupTotalCol" text="Total tasks" prefWidth="100"/>
+                                <TableColumn fx:id="groupOpenCol" text="Open" prefWidth="90"/>
+                                <TableColumn fx:id="groupInProgressCol" text="In progress" prefWidth="110"/>
+                                <TableColumn fx:id="groupDoneCol" text="Done" prefWidth="90"/>
+                                <TableColumn fx:id="groupMyActionsCol" text="My actions" prefWidth="100"/>
+                                <TableColumn fx:id="groupLastActivityCol" text="Last activity" prefWidth="150"/>
+                            </columns>
+                        </TableView>
+
+                        <Label text="My activity per group" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+                        <BarChart fx:id="activityPerGroupBarChart" prefWidth="820" prefHeight="260">
+                            <xAxis><CategoryAxis label="Group"/></xAxis>
+                            <yAxis><NumberAxis label="Actions"/></yAxis>
+                        </BarChart>
+                    </VBox>
+                </ScrollPane>
+            </Tab>
+        </TabPane>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER_LEFT" style="-fx-padding: 10 16;" spacing="10">
+            <Label fx:id="statusLabel" text="" style="-fx-text-fill: #555;"/>
+        </HBox>
+    </bottom>
+</BorderPane>

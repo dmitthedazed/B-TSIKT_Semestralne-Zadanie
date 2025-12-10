@@ -1,6 +1,7 @@
 package com.combined.backend.controller;
 
 import com.combined.backend.model.ActivityLog;
+import com.combined.backend.dto.ActivityLogDto;
 import com.combined.backend.service.ActivityLogService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,5 +23,12 @@ public class ActivityLogController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ActivityLog>> getGroupActivityLogs(@PathVariable Long groupId) {
         return ResponseEntity.ok(activityLogService.getGroupActivityLogs(groupId));
+    }
+
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ActivityLogDto>> getUserActivityLogs(@PathVariable Long userId,
+                                                                    @RequestParam(required = false) Integer days) {
+        return ResponseEntity.ok(activityLogService.getUserActivityLogs(userId, days));
     }
 }

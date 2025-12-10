@@ -1,5 +1,6 @@
 package com.combined.backend.service;
 
+import com.combined.backend.dto.ActivityLogDto;
 import com.combined.backend.model.ActivityLog;
 import com.combined.backend.model.Group;
 import com.combined.backend.model.User;
@@ -9,7 +10,9 @@ import com.combined.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ActivityLogService {
@@ -41,5 +44,29 @@ public class ActivityLogService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new RuntimeException("Group not found"));
         return activityLogRepository.findByGroupOrderByTimestampDesc(group);
+    }
+
+    public List<ActivityLogDto> getUserActivityLogs(Long userId, Integer daysBack) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        List<ActivityLog> logs = activityLogRepository.findByUser(user);
+        LocalDateTime cutoff = null;
+        if (daysBack != null && daysBack > 0) {
+            cutoff = LocalDateTime.now().minusDays(daysBack);
+        }
+        LocalDateTime finalCutoff = cutoff;
+        return logs.stream()
+                .filter(log -> finalCutoff == null || log.getTimestamp().isAfter(finalCutoff))
+                .sorted(Comparator.comparing(ActivityLog::getTimestamp).reversed())
+                .map(log -> new ActivityLogDto(
+                        log.getId(),
+                        log.getUser().getUserId(),
+                        log.getGroup() != null ? log.getGroup().getGroupId() : null,
+                        log.getGroup() != null ? log.getGroup().getName() : null,
+                        log.getActivityType(),
+                        log.getDescription(),
+                        log.getTimestamp()
+                ))
+                .collect(Collectors.toList());
     }
 }
