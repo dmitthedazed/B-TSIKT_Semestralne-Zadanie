@@ -3,6 +3,7 @@ package com.combined.frontend.controller;
 import com.combined.backend.dto.GroupDto;
 import com.combined.backend.dto.TaskDto;
 import com.combined.frontend.service.ApiService;
+import com.combined.frontend.util.ErrorUtils;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
@@ -216,13 +217,14 @@ public class GlobalTasksController implements BaseController {
                     statusLabel.setText("Loaded " + finalLoaded.size() + " tasks.");
                 });
             } catch (Exception e) {
-                if (e.getMessage() != null && e.getMessage().toLowerCase().contains("unauthorized")) {
+                String reason = ErrorUtils.extractReason(e);
+                if (!reason.isBlank() && reason.toLowerCase().contains("unauthorized")) {
                     if (mainController != null) mainController.handleUnauthorized("tasks");
                     return;
                 }
                 Platform.runLater(() -> {
                     statusLabel.setStyle("-fx-text-fill: red;");
-                    statusLabel.setText("Error loading tasks: " + e.getMessage());
+                    statusLabel.setText(ErrorUtils.formatError("Error loading tasks", e));
                 });
                 e.printStackTrace();
             }
@@ -246,13 +248,14 @@ public class GlobalTasksController implements BaseController {
                     tasksTable.refresh();
                 });
             } catch (Exception e) {
-                if (e.getMessage() != null && e.getMessage().toLowerCase().contains("unauthorized")) {
+                String reason = ErrorUtils.extractReason(e);
+                if (!reason.isBlank() && reason.toLowerCase().contains("unauthorized")) {
                     if (mainController != null) mainController.handleUnauthorized("tasks");
                     return;
                 }
                 Platform.runLater(() -> {
                     tasksTable.refresh();
-                    showAlert(Alert.AlertType.ERROR, "Update failed", "Could not update status: " + e.getMessage());
+                    showAlert(Alert.AlertType.ERROR, "Update failed", ErrorUtils.formatError("Could not update status", e));
                 });
             }
         }).start();
@@ -265,7 +268,7 @@ public class GlobalTasksController implements BaseController {
                 GroupDto group = apiService.getGroupById(task.getGroupId());
                 Platform.runLater(() -> mainController.loadGroupDetailView(group));
             } catch (Exception e) {
-                Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Open group", "Failed to open group: " + e.getMessage()));
+                Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Open group", ErrorUtils.formatError("Failed to open group", e)));
             }
         }).start();
     }
@@ -289,11 +292,15 @@ public class GlobalTasksController implements BaseController {
                 if (ok) {
                     loadTasks();
                 } else {
-                    showAlert(Alert.AlertType.ERROR, "Edit task", "Failed to save changes.");
+                    String reason = controller.getLastErrorMessage();
+                    String message = (reason == null || reason.isBlank())
+                            ? "Failed to save changes."
+                            : reason;
+                    showAlert(Alert.AlertType.ERROR, "Edit task", message);
                 }
             }
         } catch (IOException e) {
-            showAlert(Alert.AlertType.ERROR, "Edit task", "Could not open edit dialog.");
+            showAlert(Alert.AlertType.ERROR, "Edit task", ErrorUtils.formatError("Could not open edit dialog", e));
             e.printStackTrace();
         }
     }
@@ -354,7 +361,7 @@ public class GlobalTasksController implements BaseController {
                     groupFilterComboBox.getSelectionModel().selectFirst();
                 });
             } catch (Exception e) {
-                Platform.runLater(() -> statusLabel.setText("Failed to load groups: " + e.getMessage()));
+                Platform.runLater(() -> statusLabel.setText(ErrorUtils.formatError("Failed to load groups", e)));
             }
         }).start();
     }

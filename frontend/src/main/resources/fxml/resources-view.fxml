@@ -21,17 +21,7 @@
             <Button text="Refresh" onAction="#onRefreshClick"/>
         </HBox>
 
-        <TableView fx:id="resourcesTable" VBox.vgrow="ALWAYS">
-            <columns>
-                <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
-                <TableColumn fx:id="titleColumn" text="Title" prefWidth="150"/>
-                <TableColumn fx:id="urlColumn" text="URL / Path" prefWidth="200"/>
-                <TableColumn fx:id="typeColumn" text="Type" prefWidth="100"/>
-                <TableColumn fx:id="descriptionColumn" text="Description" prefWidth="200"/>
-                <TableColumn fx:id="uploadedByColumn" text="Uploaded By" prefWidth="100"/>
-                <TableColumn fx:id="actionColumn" text="Actions" prefWidth="200"/>
-            </columns>
-        </TableView>
+        <ListView fx:id="resourcesListView" VBox.vgrow="ALWAYS"/>
 
         <Label fx:id="statusLabel" text="" style="-fx-text-fill: red;"/>
     </children>

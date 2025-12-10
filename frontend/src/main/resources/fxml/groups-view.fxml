@@ -3,6 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.control.ScrollPane?>
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
@@ -22,31 +24,30 @@
         </HBox>
 
         <TabPane fx:id="groupsTabPane" VBox.vgrow="ALWAYS">
-            <Tab text="My Groups" id="myGroupsTab">
+            <Tab text="My Groups" id="myGroupsTab" closable="false">
                 <content>
-                    <TableView fx:id="myGroupsTable" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="myGroupNameColumn" text="Name" prefWidth="150"/>
-                            <TableColumn fx:id="myGroupDescriptionColumn" text="Description" prefWidth="250"/>
-                            <TableColumn fx:id="myGroupCreatedByColumn" text="Created by" prefWidth="100"/>
-                            <TableColumn fx:id="myGroupMembersColumn" text="Members" prefWidth="80"/>
-                            <TableColumn fx:id="myGroupOpenTasksColumn" text="Open Tasks" prefWidth="90"/>
-                            <TableColumn fx:id="myGroupActionColumn" text="Action" prefWidth="80"/>
-                        </columns>
-                    </TableView>
+                    <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER">
+                        <content>
+                            <FlowPane fx:id="myGroupsFlow" hgap="12" vgap="12" prefWrapLength="800">
+                                <padding>
+                                    <Insets top="10" right="10" bottom="10" left="10"/>
+                                </padding>
+                            </FlowPane>
+                        </content>
+                    </ScrollPane>
                 </content>
             </Tab>
-            <Tab text="All Groups" id="allGroupsTab">
+            <Tab text="Available Groups" id="allGroupsTab" closable="false">
                 <content>
-                    <TableView fx:id="allGroupsTable" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="allGroupNameColumn" text="Name" prefWidth="150"/>
-                            <TableColumn fx:id="allGroupDescriptionColumn" text="Description" prefWidth="250"/>
-                            <TableColumn fx:id="allGroupCreatedByColumn" text="Created by" prefWidth="100"/>
-                            <TableColumn fx:id="allGroupMembersColumn" text="Members" prefWidth="80"/>
-                            <TableColumn fx:id="allGroupActionColumn" text="Action" prefWidth="80"/>
-                        </columns>
-                    </TableView>
+                    <ScrollPane fitToWidth="true" fitToHeight="true" hbarPolicy="NEVER">
+                        <content>
+                            <FlowPane fx:id="allGroupsFlow" hgap="12" vgap="12" prefWrapLength="800">
+                                <padding>
+                                    <Insets top="10" right="10" bottom="10" left="10"/>
+                                </padding>
+                            </FlowPane>
+                        </content>
+                    </ScrollPane>
                 </content>
             </Tab>
         </TabPane>

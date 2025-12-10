@@ -1,17 +1,23 @@
 package com.combined.frontend.controller;
 
 import com.combined.frontend.MainApp;
-import com.combined.frontend.controller.AuthViewController;
 import com.combined.frontend.service.ApiService;
 import com.combined.frontend.service.JwtDecoder;
 import com.combined.frontend.service.NotificationService;
+import javafx.animation.PauseTransition;
+import javafx.animation.FadeTransition;
+import javafx.animation.ParallelTransition;
+import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 
@@ -64,8 +70,8 @@ public class LoginController {
     @FXML
     private void handleTryDemo() {
         // Demo account (fake data) — adjust credentials if your backend provides a dedicated demo user
-        String email = "demo@example.com";
-        String password = "demo1234";
+        String email = "occaecat";
+        String password = "REDACTED";
         emailField.setText(email);
         passwordField.setText(password);
         performLogin(email, password);
@@ -74,11 +80,11 @@ public class LoginController {
     private void performLogin(String email, String password) {
         try {
             if (email == null || email.isBlank()) {
-                showAlert(Alert.AlertType.ERROR, "Login Failed", "Please enter your email or username.");
+                showToastError("Please enter your email or username.");
                 return;
             }
             if (password == null || password.isBlank()) {
-                showAlert(Alert.AlertType.ERROR, "Login Failed", "Please enter your password.");
+                showToastError("Please enter your password.");
                 return;
             }
 
@@ -89,10 +95,9 @@ public class LoginController {
 
             apiService.setTokenAndUserId(token, userId);
 
-            showAlert(Alert.AlertType.INFORMATION, "Login Successful", "Welcome back, " + nickname + "!");
             switchToMainView(apiService, userId, nickname);
         } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Login Failed", e.getMessage());
+            showToastError("Wrong username or password.");
             e.printStackTrace();
         }
     }
@@ -132,6 +137,60 @@ public class LoginController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void showToastError(String message) {
+        if (emailField == null || emailField.getScene() == null) {
+            return;
+        }
+        Popup popup = new Popup();
+        Label label = new Label(message);
+        label.setStyle("-fx-background-color: rgba(200,40,40,0.95); -fx-text-fill: white; -fx-padding: 14 18; -fx-background-radius: 10; -fx-font-size: 13px; -fx-font-weight: 600;");
+        popup.getContent().add(label);
+        popup.setAutoFix(true);
+        popup.setAutoHide(true);
+
+        Scene scene = emailField.getScene();
+        Stage stage = (Stage) scene.getWindow();
+
+        popup.show(stage);
+
+        // Recompute position after CSS/layout so sizing is accurate
+        label.applyCss();
+        label.layout();
+        javafx.geometry.Bounds rootBounds = scene.getRoot().localToScreen(scene.getRoot().getBoundsInLocal());
+        double labelW = label.getWidth();
+        double labelH = label.getHeight();
+        double x = rootBounds.getMinX() + (rootBounds.getWidth() - labelW) / 2;
+        double y = rootBounds.getMaxY() - labelH - 24;
+        popup.setX(x);
+        popup.setY(y);
+
+        label.setOpacity(0);
+        label.setTranslateY(20);
+
+        FadeTransition fadeIn = new FadeTransition(Duration.millis(200), label);
+        fadeIn.setFromValue(0);
+        fadeIn.setToValue(1);
+        TranslateTransition slideUp = new TranslateTransition(Duration.millis(200), label);
+        slideUp.setFromY(20);
+        slideUp.setToY(0);
+        ParallelTransition showAnim = new ParallelTransition(fadeIn, slideUp);
+
+        PauseTransition stay = new PauseTransition(Duration.seconds(2.2));
+
+        FadeTransition fadeOut = new FadeTransition(Duration.millis(200), label);
+        fadeOut.setFromValue(1);
+        fadeOut.setToValue(0);
+        TranslateTransition slideDown = new TranslateTransition(Duration.millis(200), label);
+        slideDown.setFromY(0);
+        slideDown.setToY(10);
+        ParallelTransition hideAnim = new ParallelTransition(fadeOut, slideDown);
+        hideAnim.setOnFinished(e -> popup.hide());
+
+        showAnim.setOnFinished(e -> stay.play());
+        stay.setOnFinished(e -> hideAnim.play());
+        showAnim.play();
     }
 
     // Allow parent to prefill the login email after registration

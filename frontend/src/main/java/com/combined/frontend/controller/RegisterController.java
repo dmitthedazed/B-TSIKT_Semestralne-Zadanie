@@ -72,9 +72,12 @@ public class RegisterController {
         try {
             Stage stage = (Stage) firstNameField.getScene().getWindow();
             FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/fxml/login.fxml"));
-            Scene scene = new Scene(loader.load(), 800, 600);
+            Scene scene = new Scene(loader.load(), MainApp.AUTH_WIDTH, MainApp.AUTH_HEIGHT);
             stage.setScene(scene);
             stage.setTitle("Combined Study Platform - Login");
+            stage.setWidth(MainApp.AUTH_WIDTH);
+            stage.setHeight(MainApp.AUTH_HEIGHT);
+            stage.centerOnScreen();
         } catch (IOException e) {
             e.printStackTrace();
             showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not load login screen.");

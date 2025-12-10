@@ -5,6 +5,7 @@ import com.combined.frontend.dto.MemberWithRoleDto;
 import com.combined.backend.dto.TaskDto;
 import com.combined.backend.model.Membership; // New import
 import com.combined.frontend.service.ApiService;
+import com.combined.frontend.util.ErrorUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -126,7 +127,7 @@ public class MembersController implements BaseController {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not load add member dialog.");
+            showAlert(Alert.AlertType.ERROR, "Error", ErrorUtils.formatError("Could not load add member dialog", e));
         }
     }
 
@@ -172,7 +173,7 @@ public class MembersController implements BaseController {
                     });
                 } catch (Exception e) {
                     Platform.runLater(() -> {
-                        showAlert(Alert.AlertType.ERROR, "Error", "Failed to remove member: " + e.getMessage());
+                        showAlert(Alert.AlertType.ERROR, "Error", ErrorUtils.formatError("Failed to remove member", e));
                     });
                 }
             }).start();
@@ -186,7 +187,7 @@ public class MembersController implements BaseController {
                 Platform.runLater(() -> loadGroupMembers()); // Refresh list without popup
             } catch (Exception e) {
                 Platform.runLater(() -> {
-                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to update member role: " + e.getMessage());
+                    showAlert(Alert.AlertType.ERROR, "Error", ErrorUtils.formatError("Failed to update member role", e));
                 });
             } finally {
                 pendingRoleChanges.remove(member.getUserId());
@@ -225,7 +226,7 @@ public class MembersController implements BaseController {
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     statusLabel.setStyle("-fx-text-fill: red;");
-                    statusLabel.setText("Error loading members: " + e.getMessage());
+                    statusLabel.setText(ErrorUtils.formatError("Error loading members", e));
                 });
             }
         }).start();

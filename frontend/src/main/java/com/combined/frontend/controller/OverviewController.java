@@ -3,6 +3,7 @@ package com.combined.frontend.controller;
 import com.combined.backend.dto.GroupDto;
 import com.combined.backend.dto.GroupStatsDto;
 import com.combined.backend.dto.TaskDto;
+import com.combined.backend.dto.ResourceDto;
 import com.combined.frontend.service.ApiService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -25,7 +26,13 @@ public class OverviewController implements BaseController {
     @FXML private Label membersCountLabel;
     @FXML private GridPane taskStatusGrid;
     @FXML private ListView<String> upcomingDeadlinesList;
+    @FXML private ListView<String> materialsList;
+    @FXML private ListView<String> memberLoadList;
     @FXML private Label statusLabel;
+    @FXML private Label openCountLabel;
+    @FXML private Label inProgressCountLabel;
+    @FXML private Label doneCountLabel;
+    @FXML private StatsController statsSectionController;
 
     private ApiService apiService;
     private Long currentUserId;
@@ -36,21 +43,25 @@ public class OverviewController implements BaseController {
     @Override
     public void setApiService(ApiService apiService) {
         this.apiService = apiService;
+        if (statsSectionController != null) statsSectionController.setApiService(apiService);
     }
 
     @Override
     public void setCurrentUser(Long userId, String nickname) {
         this.currentUserId = userId;
         this.currentNickname = nickname;
+        if (statsSectionController != null) statsSectionController.setCurrentUser(userId, nickname);
     }
 
     @Override
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
+        if (statsSectionController != null) statsSectionController.setMainController(mainController);
     }
 
     public void setGroup(GroupDto group) {
         this.currentGroup = group;
+        if (statsSectionController != null) statsSectionController.setGroup(group);
         if (group != null) {
             loadOverviewData();
         }
@@ -88,9 +99,17 @@ public class OverviewController implements BaseController {
                 // Fetch group statistics
                 GroupStatsDto stats = apiService.getGroupStats(currentGroup.getId());
 
+                // Fetch resources
+                List<ResourceDto> resources = apiService.getResourcesByGroup(currentGroup.getId());
+
                 Platform.runLater(() -> {
                     upcomingDeadlinesList.getItems().setAll(upcoming);
-                    displayTaskStatusCounts(stats.getTaskStatusCounts());
+                    displayTaskStatusCounts(stats != null ? stats.getTaskStatusCounts() : null);
+                    displayMemberLoad(stats != null ? stats.getTasksPerMember() : null);
+                    displayResources(resources);
+                    if (statsSectionController != null && stats != null) {
+                        statsSectionController.setStats(stats);
+                    }
                     statusLabel.setText("Overview data loaded.");
                 });
 
@@ -104,13 +123,47 @@ public class OverviewController implements BaseController {
 
     private void displayTaskStatusCounts(Map<String, Long> statusCounts) {
         taskStatusGrid.getChildren().clear();
+        long open = 0, inProgress = 0, done = 0;
         int row = 0;
-        for (Map.Entry<String, Long> entry : statusCounts.entrySet()) {
-            Label status = new Label(entry.getKey() + ":");
-            Label count = new Label(String.valueOf(entry.getValue()));
-            taskStatusGrid.add(status, 0, row);
-            taskStatusGrid.add(count, 1, row);
-            row++;
+        if (statusCounts != null) {
+            for (Map.Entry<String, Long> entry : statusCounts.entrySet()) {
+                String key = entry.getKey() == null ? "" : entry.getKey().toUpperCase();
+                long val = entry.getValue() == null ? 0 : entry.getValue();
+                if (key.contains("OPEN")) open += val;
+                else if (key.contains("PROGRESS")) inProgress += val;
+                else if (key.contains("DONE") || key.contains("COMPLETED")) done += val;
+
+                Label status = new Label(entry.getKey() + ":");
+                Label count = new Label(String.valueOf(val));
+                taskStatusGrid.add(status, 0, row);
+                taskStatusGrid.add(count, 1, row);
+                row++;
+            }
         }
+        if (openCountLabel != null) openCountLabel.setText("Open: " + open);
+        if (inProgressCountLabel != null) inProgressCountLabel.setText("In Progress: " + inProgress);
+        if (doneCountLabel != null) doneCountLabel.setText("Done: " + done);
+    }
+
+    private void displayMemberLoad(Map<String, Long> memberLoad) {
+        if (memberLoadList == null) return;
+        memberLoadList.getItems().clear();
+        if (memberLoad == null || memberLoad.isEmpty()) return;
+        memberLoad.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey(String.CASE_INSENSITIVE_ORDER))
+                .forEach(e -> memberLoadList.getItems().add(e.getKey() + ": " + e.getValue() + " tasks"));
+    }
+
+    private void displayResources(List<ResourceDto> resources) {
+        if (materialsList == null) return;
+        materialsList.getItems().clear();
+        if (resources == null || resources.isEmpty()) return;
+        resources.stream()
+                .limit(8)
+                .forEach(r -> {
+                    String type = r.getType() == null ? "" : r.getType().toUpperCase();
+                    String uploader = r.getUploadedByName() == null ? "" : (" · " + r.getUploadedByName());
+                    materialsList.getItems().add(r.getTitle() + " (" + type + ")" + uploader);
+                });
     }
 }

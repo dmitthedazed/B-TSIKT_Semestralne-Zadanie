@@ -1,19 +1,15 @@
 package com.combined.frontend.controller;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
 
 /**
- * Hosts the Login and Register tabs in a single window and wires up tab switching.
+ * Hosts the authentication view. Register tab is currently disabled in the UI;
+ * keep the controller lean until multi-tab is reintroduced.
  */
 public class AuthViewController {
 
-    @FXML private TabPane authTabPane;
-    @FXML private Tab loginTab;
-    @FXML private Tab registerTab;
-
-    // Controllers from included FXML files
+    @FXML private javafx.scene.layout.Region loginView;
+    @FXML private javafx.scene.layout.Region registerView;
     @FXML private LoginController loginViewController;
     @FXML private RegisterController registerViewController;
 
@@ -22,13 +18,23 @@ public class AuthViewController {
         if (loginViewController != null) {
             loginViewController.setAuthViewController(this);
         }
+        // Register is not shown in the current UI, but keep wiring if present
         if (registerViewController != null) {
             registerViewController.setAuthViewController(this);
         }
+        // Default to showing login
+        showLoginTab();
     }
 
     public void showLoginTab() {
-        authTabPane.getSelectionModel().select(loginTab);
+        if (loginView != null) {
+            loginView.setVisible(true);
+            loginView.setManaged(true);
+        }
+        if (registerView != null) {
+            registerView.setVisible(false);
+            registerView.setManaged(false);
+        }
     }
 
     public void showLoginTab(String prefillEmail) {
@@ -39,6 +45,13 @@ public class AuthViewController {
     }
 
     public void showRegisterTab() {
-        authTabPane.getSelectionModel().select(registerTab);
+        if (registerView != null) {
+            registerView.setVisible(true);
+            registerView.setManaged(true);
+        }
+        if (loginView != null) {
+            loginView.setVisible(false);
+            loginView.setManaged(false);
+        }
     }
 }

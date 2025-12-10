@@ -4,14 +4,18 @@ import com.combined.backend.dto.GroupDto;
 import com.combined.backend.dto.ResourceDto;
 import com.combined.frontend.service.ApiService;
 import com.combined.frontend.dto.MemberWithRoleDto;
+import com.combined.frontend.util.ErrorUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.HBox; // New import
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.geometry.Insets;
 import java.awt.Desktop;
 import java.net.URI;
 import java.nio.file.Paths;
@@ -22,14 +26,7 @@ import java.util.Optional;
 
 public class ResourcesController implements BaseController {
 
-    @FXML private TableView<ResourceDto> resourcesTable;
-    @FXML private TableColumn<ResourceDto, Long> idColumn;
-    @FXML private TableColumn<ResourceDto, String> titleColumn;
-    @FXML private TableColumn<ResourceDto, String> urlColumn;
-    @FXML private TableColumn<ResourceDto, String> typeColumn; // Will show extension for files, LINK for links
-    @FXML private TableColumn<ResourceDto, String> descriptionColumn;
-    @FXML private TableColumn<ResourceDto, String> uploadedByColumn; // New column
-    @FXML private TableColumn<ResourceDto, Void> actionColumn; // For Edit/Delete buttons
+    @FXML private ListView<ResourceDto> resourcesListView;
 
     @FXML private Label statusLabel;
     @FXML private Button createResourceButton;
@@ -77,67 +74,9 @@ public class ResourcesController implements BaseController {
 
     @FXML
     private void initialize() {
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
-        urlColumn.setCellValueFactory(new PropertyValueFactory<>("pathOrUrl"));
-        typeColumn.setCellValueFactory(param -> {
-            ResourceDto r = param.getValue();
-            if (r == null) return null;
-            String ext = (r.getFileExtension() != null && !r.getFileExtension().isBlank()) ? r.getFileExtension() : null;
-            String type = (r.getType() != null && r.getType().equalsIgnoreCase("FILE"))
-                    ? (ext != null ? ext : "FILE")
-                    : "LINK";
-            return new javafx.beans.property.SimpleStringProperty(type);
-        });
-        descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
-        uploadedByColumn.setCellValueFactory(new PropertyValueFactory<>("uploadedByName"));
-
-        resourcesTable.setItems(resourcesData);
+        resourcesListView.setItems(resourcesData);
+        resourcesListView.setCellFactory(list -> new ResourceCell());
         statusLabel.setText("Select a group to view resources.");
-
-        addActionButtonToTable();
-    }
-
-    private void addActionButtonToTable() {
-        actionColumn.setCellFactory(param -> new TableCell<ResourceDto, Void>() {
-            private final Button openButton = new Button();
-            private final Button editButton = new Button("Edit");
-            private final Button deleteButton = new Button("Delete");
-            private final HBox pane = new HBox(openButton, editButton, deleteButton);
-
-            {
-                pane.setSpacing(5);
-                openButton.setOnAction(event -> {
-                    ResourceDto resource = getTableView().getItems().get(getIndex());
-                    handleOpenOrDownload(resource);
-                });
-                editButton.setOnAction(event -> {
-                    ResourceDto resource = getTableView().getItems().get(getIndex());
-                    handleEditResource(resource);
-                });
-                deleteButton.setOnAction(event -> {
-                    ResourceDto resource = getTableView().getItems().get(getIndex());
-                    handleDeleteResource(resource);
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    ResourceDto resource = getTableView().getItems().get(getIndex());
-                    boolean isFile = resource != null && resource.getType() != null && resource.getType().equalsIgnoreCase("FILE");
-                    openButton.setText(isFile ? "Download" : "Open Link");
-                    openButton.setDisable(resource == null || resource.getPathOrUrl() == null || resource.getPathOrUrl().isBlank());
-                    boolean canModify = canModifyResource(resource);
-                    editButton.setDisable(!canModify);
-                    deleteButton.setDisable(!canModify);
-                    setGraphic(pane);
-                }
-            }
-        });
     }
 
     @FXML
@@ -177,12 +116,16 @@ public class ResourcesController implements BaseController {
                     showAlert(Alert.AlertType.INFORMATION, "Success", "Resource created successfully!");
                     loadResourcesForGroup(currentlySelectedGroup.getId()); // Refresh list
                 } else {
-                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to create resource. Check input.");
+                    String reason = createResourceController.getLastErrorMessage();
+                    String message = (reason == null || reason.isBlank())
+                            ? "Failed to create resource."
+                            : reason;
+                    showAlert(Alert.AlertType.ERROR, "Error", message);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not load create resource dialog.");
+            showAlert(Alert.AlertType.ERROR, "Error", ErrorUtils.formatError("Could not load create resource dialog", e));
         }
     }
 
@@ -209,12 +152,16 @@ public class ResourcesController implements BaseController {
                     showAlert(Alert.AlertType.INFORMATION, "Success", "Resource updated successfully!");
                     loadResourcesForGroup(currentlySelectedGroup.getId()); // Refresh list
                 } else {
-                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to update resource. Check input.");
+                    String reason = editResourceController.getLastErrorMessage();
+                    String message = (reason == null || reason.isBlank())
+                            ? "Failed to update resource."
+                            : reason;
+                    showAlert(Alert.AlertType.ERROR, "Error", message);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not load edit resource dialog.");
+            showAlert(Alert.AlertType.ERROR, "Error", ErrorUtils.formatError("Could not load edit resource dialog", e));
         }
     }
 
@@ -238,9 +185,7 @@ public class ResourcesController implements BaseController {
                         loadResourcesForGroup(currentlySelectedGroup.getId()); // Refresh list
                     });
                 } catch (Exception e) {
-                    Platform.runLater(() -> {
-                        showAlert(Alert.AlertType.ERROR, "Error", "Failed to delete resource: " + e.getMessage());
-                    });
+                    Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Error", ErrorUtils.formatError("Failed to delete resource", e)));
                 }
             }).start();
         }
@@ -261,7 +206,7 @@ public class ResourcesController implements BaseController {
                 Desktop.getDesktop().browse(new URI(pathOrUrl));
             }
         } catch (Exception ex) {
-            showAlert(Alert.AlertType.ERROR, "Open/Download", "Cannot open resource: " + ex.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Open/Download", ErrorUtils.formatError("Cannot open resource", ex));
         }
     }
 
@@ -293,7 +238,7 @@ public class ResourcesController implements BaseController {
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     statusLabel.setStyle("-fx-text-fill: red;");
-                    statusLabel.setText("Error loading resources: " + e.getMessage());
+                    statusLabel.setText(ErrorUtils.formatError("Error loading resources", e));
                 });
             }
         }).start();
@@ -333,7 +278,7 @@ public class ResourcesController implements BaseController {
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     statusLabel.setStyle("-fx-text-fill: red;");
-                    statusLabel.setText("Error determining role: " + e.getMessage());
+                    statusLabel.setText(ErrorUtils.formatError("Error determining role", e));
                 });
             }
         }).start();
@@ -352,6 +297,56 @@ public class ResourcesController implements BaseController {
     private void updateCreateButton() {
         if (createResourceButton != null) {
             createResourceButton.setDisable(!canCreate());
+        }
+    }
+
+    private class ResourceCell extends ListCell<ResourceDto> {
+        private final Label title = new Label();
+        private final Label meta = new Label();
+        private final Label desc = new Label();
+        private final Button openButton = new Button();
+        private final Button editButton = new Button("Edit");
+        private final Button deleteButton = new Button("Delete");
+        private final VBox content = new VBox(6);
+        private final HBox actions = new HBox(6);
+
+        ResourceCell() {
+            actions.getChildren().addAll(openButton, editButton, deleteButton);
+            content.getChildren().addAll(title, meta, desc, actions);
+            content.setPadding(new Insets(10));
+            content.setStyle("-fx-background-color: -fx-control-inner-background; -fx-border-color: -fx-box-border; -fx-border-radius: 6; -fx-background-radius: 6;");
+            openButton.setOnAction(e -> {
+                ResourceDto res = getItem();
+                if (res != null) handleOpenOrDownload(res);
+            });
+            editButton.setOnAction(e -> {
+                ResourceDto res = getItem();
+                if (res != null) handleEditResource(res);
+            });
+            deleteButton.setOnAction(e -> {
+                ResourceDto res = getItem();
+                if (res != null) handleDeleteResource(res);
+            });
+        }
+
+        @Override
+        protected void updateItem(ResourceDto res, boolean empty) {
+            super.updateItem(res, empty);
+            if (empty || res == null) {
+                setGraphic(null);
+            } else {
+                String type = res.getType() == null ? "" : res.getType().toUpperCase();
+                title.setText(res.getTitle() + " (" + type + ")");
+                meta.setText((res.getPathOrUrl() == null ? "" : res.getPathOrUrl()) +
+                        (res.getUploadedByName() == null ? "" : " · " + res.getUploadedByName()));
+                desc.setText(res.getDescription() == null ? "" : res.getDescription());
+                boolean isFile = type.equals("FILE");
+                openButton.setText(isFile ? "Download" : "Open Link");
+                boolean canModify = canModifyResource(res);
+                editButton.setDisable(!canModify);
+                deleteButton.setDisable(!canModify);
+                setGraphic(content);
+            }
         }
     }
 }

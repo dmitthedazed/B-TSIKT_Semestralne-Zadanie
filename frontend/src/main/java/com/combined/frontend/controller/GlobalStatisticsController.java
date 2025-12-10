@@ -3,6 +3,7 @@ package com.combined.frontend.controller;
 import com.combined.backend.dto.ActivityLogDto;
 import com.combined.backend.dto.TaskDto;
 import com.combined.frontend.service.ApiService;
+import com.combined.frontend.util.ErrorUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -149,15 +150,16 @@ public class GlobalStatisticsController implements BaseController {
                     statusLabel.setText("Statistics loaded.");
                 });
             } catch (Exception e) {
-                boolean unauthorized = e.getMessage() != null && e.getMessage().toLowerCase().contains("unauthorized");
+                String reason = ErrorUtils.extractReason(e);
+                boolean unauthorized = !reason.isBlank() && reason.toLowerCase().contains("unauthorized");
                 cachedLogs = List.of(); // keep charts running
                 Platform.runLater(() -> {
                     updateCharts();
-                    statusLabel.setText(unauthorized ? "Authorization required for activity logs" : "Failed to load statistics: " + e.getMessage());
+                    statusLabel.setText(unauthorized ? "Authorization required for activity logs" : ErrorUtils.formatError("Failed to load statistics", e));
                     if (unauthorized && mainController != null) {
                         mainController.handleUnauthorized("statistics");
                     } else if (!unauthorized && mainController != null) {
-                        mainController.showAlert(Alert.AlertType.ERROR, "Statistics", "Failed to load statistics: " + e.getMessage());
+                        mainController.showAlert(Alert.AlertType.ERROR, "Statistics", ErrorUtils.formatError("Failed to load statistics", e));
                     }
                 });
                 e.printStackTrace();
@@ -201,14 +203,22 @@ public class GlobalStatisticsController implements BaseController {
 
     private void updateActivityChart(List<ActivityLogDto> logs) {
         activityLineChart.getData().clear();
-        if (logs == null || logs.isEmpty()) return;
+        if (logs == null || logs.isEmpty()) {
+            activityLineChart.setTitle("No activity in selected period");
+            return;
+        }
+        activityLineChart.setTitle("Activity by day");
 
         Map<LocalDate, Long> perDay = logs.stream()
                 .collect(Collectors.groupingBy(l -> l.getTimestamp().toLocalDate(), Collectors.counting()));
-        XYChart.Series<String, Number> series = new XYChart.Series<>();
+
+        // ensure sorted order
+        var series = new XYChart.Series<String, Number>();
         perDay.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .forEach(e -> series.getData().add(new XYChart.Data<>(e.getKey().toString(), e.getValue())));
+        activityLineChart.setLegendVisible(false);
+        activityLineChart.setCreateSymbols(true);
         activityLineChart.getData().add(series);
     }
 
@@ -244,7 +254,10 @@ public class GlobalStatisticsController implements BaseController {
         statusPieChart.getData().clear();
         Map<String, Long> counts = tasks.stream()
                 .collect(Collectors.groupingBy(t -> t.getStatus() == null ? "UNKNOWN" : t.getStatus().toUpperCase(), Collectors.counting()));
-        counts.forEach((status, count) -> statusPieChart.getData().add(new PieChart.Data(status + " (" + count + ")", count)));
+        counts.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .forEach(e -> statusPieChart.getData().add(new PieChart.Data(e.getKey() + " (" + e.getValue() + ")", e.getValue())));
+        statusPieChart.setLegendVisible(true);
     }
 
     private void updateTasksByGroup(List<TaskDto> tasks) {
@@ -255,6 +268,7 @@ public class GlobalStatisticsController implements BaseController {
         counts.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .forEach(e -> series.getData().add(new XYChart.Data<>(e.getKey(), e.getValue())));
+        tasksByGroupBarChart.setLegendVisible(false);
         tasksByGroupBarChart.getData().add(series);
     }
 

@@ -3,14 +3,16 @@ package com.combined.frontend.controller;
 import com.combined.backend.dto.GroupDto;
 import com.combined.backend.dto.TaskDto;
 import com.combined.frontend.service.ApiService;
+import com.combined.frontend.util.ErrorUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.HBox; // New import
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.geometry.Insets;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -20,14 +22,7 @@ import java.util.stream.Collectors;
 
 public class TasksController implements BaseController {
 
-    @FXML private TableView<TaskDto> tasksTable;
-    @FXML private TableColumn<TaskDto, Long> idColumn;
-    @FXML private TableColumn<TaskDto, String> titleColumn;
-    @FXML private TableColumn<TaskDto, String> descriptionColumn;
-    @FXML private TableColumn<TaskDto, String> statusColumn;
-    @FXML private TableColumn<TaskDto, LocalDateTime> deadlineColumn;
-    @FXML private TableColumn<TaskDto, String> assignedToColumn; // New column
-    @FXML private TableColumn<TaskDto, Void> actionColumn; // For Edit/Delete buttons
+    @FXML private ListView<TaskDto> tasksListView;
 
     @FXML private ComboBox<String> statusFilterComboBox; // New filter
     @FXML private TextField assignedToFilterField; // New filter
@@ -77,14 +72,8 @@ public class TasksController implements BaseController {
 
     @FXML
     private void initialize() {
-        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-        titleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
-        descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
-        statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
-        deadlineColumn.setCellValueFactory(new PropertyValueFactory<>("deadline"));
-        assignedToColumn.setCellValueFactory(new PropertyValueFactory<>("assignedToName")); // New
-
-        tasksTable.setItems(tasksData);
+        tasksListView.setItems(tasksData);
+        tasksListView.setCellFactory(list -> new TaskCell());
         statusLabel.setText("Select a group to view tasks.");
 
         // Setup status filter
@@ -92,38 +81,6 @@ public class TasksController implements BaseController {
         statusFilterComboBox.getSelectionModel().selectFirst();
         statusFilterComboBox.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         assignedToFilterField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-
-        addActionButtonToTable();
-    }
-
-    private void addActionButtonToTable() {
-        actionColumn.setCellFactory(param -> new TableCell<TaskDto, Void>() {
-            private final Button editButton = new Button("Edit");
-            private final Button deleteButton = new Button("Delete");
-            private final HBox pane = new HBox(editButton, deleteButton);
-
-            {
-                pane.setSpacing(5);
-                editButton.setOnAction(event -> {
-                    TaskDto task = getTableView().getItems().get(getIndex());
-                    handleEditTask(task);
-                });
-                deleteButton.setOnAction(event -> {
-                    TaskDto task = getTableView().getItems().get(getIndex());
-                    handleDeleteTask(task);
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(pane);
-                }
-            }
-        });
     }
 
     @FXML
@@ -159,12 +116,16 @@ public class TasksController implements BaseController {
                     showAlert(Alert.AlertType.INFORMATION, "Success", "Task created successfully!");
                     loadTasksForGroup(currentlySelectedGroup.getId()); // Refresh list
                 } else {
-                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to create task. Check input.");
+                    String reason = createTaskController.getLastErrorMessage();
+                    String message = (reason == null || reason.isBlank())
+                            ? "Failed to create task."
+                            : reason;
+                    showAlert(Alert.AlertType.ERROR, "Error", message);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not load create task dialog.");
+            showAlert(Alert.AlertType.ERROR, "Error", ErrorUtils.formatError("Could not load create task dialog", e));
         }
     }
 
@@ -187,12 +148,16 @@ public class TasksController implements BaseController {
                     showAlert(Alert.AlertType.INFORMATION, "Success", "Task updated successfully!");
                     loadTasksForGroup(currentlySelectedGroup.getId()); // Refresh list
                 } else {
-                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to update task. Check input.");
+                    String reason = editTaskController.getLastErrorMessage();
+                    String message = (reason == null || reason.isBlank())
+                            ? "Failed to update task."
+                            : reason;
+                    showAlert(Alert.AlertType.ERROR, "Error", message);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not load edit task dialog.");
+            showAlert(Alert.AlertType.ERROR, "Error", ErrorUtils.formatError("Could not load edit task dialog", e));
         }
     }
 
@@ -212,9 +177,7 @@ public class TasksController implements BaseController {
                         loadTasksForGroup(currentlySelectedGroup.getId()); // Refresh list
                     });
                 } catch (Exception e) {
-                    Platform.runLater(() -> {
-                        showAlert(Alert.AlertType.ERROR, "Error", "Failed to delete task: " + e.getMessage());
-                    });
+                    Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Error", ErrorUtils.formatError("Failed to delete task", e)));
                 }
             }).start();
         }
@@ -247,7 +210,7 @@ public class TasksController implements BaseController {
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     statusLabel.setStyle("-fx-text-fill: red;");
-                    statusLabel.setText("Error loading tasks: " + e.getMessage());
+                    statusLabel.setText(ErrorUtils.formatError("Error loading tasks", e));
                 });
             }
         }).start();
@@ -274,5 +237,45 @@ public class TasksController implements BaseController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private class TaskCell extends ListCell<TaskDto> {
+        private final Label title = new Label();
+        private final Label meta = new Label();
+        private final Label desc = new Label();
+        private final Button editButton = new Button("Edit");
+        private final Button deleteButton = new Button("Delete");
+        private final VBox content = new VBox(6);
+        private final HBox actions = new HBox(6);
+
+        TaskCell() {
+            actions.getChildren().addAll(editButton, deleteButton);
+            content.getChildren().addAll(title, meta, desc, actions);
+            content.setPadding(new Insets(10));
+            content.setStyle("-fx-background-color: -fx-control-inner-background; -fx-border-color: -fx-box-border; -fx-border-radius: 6; -fx-background-radius: 6;");
+            editButton.setOnAction(e -> {
+                TaskDto task = getItem();
+                if (task != null) handleEditTask(task);
+            });
+            deleteButton.setOnAction(e -> {
+                TaskDto task = getItem();
+                if (task != null) handleDeleteTask(task);
+            });
+        }
+
+        @Override
+        protected void updateItem(TaskDto task, boolean empty) {
+            super.updateItem(task, empty);
+            if (empty || task == null) {
+                setGraphic(null);
+            } else {
+                title.setText(task.getTitle() + " (" + task.getStatus() + ")");
+                String assignee = task.getAssignedToName() == null ? "Unassigned" : task.getAssignedToName();
+                String deadline = task.getDeadline() == null ? "" : " · Due: " + task.getDeadline();
+                meta.setText("Assignee: " + assignee + deadline);
+                desc.setText(task.getDescription() == null ? "" : task.getDescription());
+                setGraphic(content);
+            }
+        }
     }
 }

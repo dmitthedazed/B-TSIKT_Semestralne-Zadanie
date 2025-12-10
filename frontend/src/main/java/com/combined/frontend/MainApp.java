@@ -7,12 +7,18 @@ import javafx.stage.Stage;
 
 public class MainApp extends Application {
 
+    public static final double AUTH_WIDTH = 900;
+    public static final double AUTH_HEIGHT = 900;
+
     @Override
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(MainApp.class.getResource("/fxml/auth-view.fxml"));
-        Scene scene = new Scene(loader.load(), 800, 600);
+        Scene scene = new Scene(loader.load(), AUTH_WIDTH, AUTH_HEIGHT);
         stage.setScene(scene);
-        stage.setTitle("Combined Study Platform - Welcome");
+        stage.setTitle("TaskBoard Study Platform - Welcome");
+        stage.setWidth(AUTH_WIDTH);
+        stage.setHeight(AUTH_HEIGHT);
+        stage.centerOnScreen();
         stage.show();
     }
 

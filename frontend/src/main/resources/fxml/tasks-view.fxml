@@ -25,17 +25,7 @@
             <Button text="Refresh" onAction="#onRefreshClick"/>
         </HBox>
 
-        <TableView fx:id="tasksTable" VBox.vgrow="ALWAYS">
-            <columns>
-                <TableColumn fx:id="idColumn" text="ID" prefWidth="50"/>
-                <TableColumn fx:id="titleColumn" text="Title" prefWidth="150"/>
-                <TableColumn fx:id="descriptionColumn" text="Description" prefWidth="250"/>
-                <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
-                <TableColumn fx:id="assignedToColumn" text="Assigned To" prefWidth="100"/>
-                <TableColumn fx:id="deadlineColumn" text="Deadline" prefWidth="120"/>
-                <TableColumn fx:id="actionColumn" text="Actions" prefWidth="120"/>
-            </columns>
-        </TableView>
+        <ListView fx:id="tasksListView" VBox.vgrow="ALWAYS"/>
 
         <Label fx:id="statusLabel" text="" style="-fx-text-fill: red;"/>
     </children>

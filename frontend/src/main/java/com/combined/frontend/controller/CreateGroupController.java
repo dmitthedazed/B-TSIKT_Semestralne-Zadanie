@@ -25,6 +25,10 @@ public class CreateGroupController {
         return newGroup;
     }
 
+    public String getLastErrorMessage() {
+        return errorMessageLabel == null ? "" : errorMessageLabel.getText();
+    }
+
     @FXML
     private void initialize() {
         errorMessageLabel.setText("");

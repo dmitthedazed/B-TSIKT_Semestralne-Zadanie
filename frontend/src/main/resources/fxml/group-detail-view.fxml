@@ -23,7 +23,6 @@
             <Tab text="Tasks" closable="false"/>
             <Tab text="Materials" closable="false"/>
             <Tab text="Members" closable="false"/>
-            <Tab text="Stats" closable="false"/>
         </TabPane>
     </center>
 </BorderPane>

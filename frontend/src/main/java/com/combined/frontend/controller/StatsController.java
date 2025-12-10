@@ -58,6 +58,16 @@ public class StatsController implements BaseController {
         }
     }
 
+    public void setStats(GroupStatsDto stats) {
+        if (stats == null) return;
+        Platform.runLater(() -> {
+            updateTaskStatusPieChart(stats.getTaskStatusCounts());
+            updateTasksPerMemberBarChart(stats.getTasksPerMember());
+            updateSummary(stats.getTaskStatusCounts());
+            statusLabel.setText("Group statistics loaded.");
+        });
+    }
+
     @FXML
     private void initialize() {
         statusLabel.setText("");
@@ -77,13 +87,7 @@ public class StatsController implements BaseController {
         new Thread(() -> {
             try {
                 GroupStatsDto stats = apiService.getGroupStats(currentGroup.getId());
-
-                Platform.runLater(() -> {
-                    updateTaskStatusPieChart(stats.getTaskStatusCounts());
-                    updateTasksPerMemberBarChart(stats.getTasksPerMember());
-                    updateSummary(stats.getTaskStatusCounts());
-                    statusLabel.setText("Group statistics loaded.");
-                });
+                setStats(stats);
             } catch (Exception e) {
                 Platform.runLater(() -> {
                     statusLabel.setText("Error loading group statistics: " + e.getMessage());

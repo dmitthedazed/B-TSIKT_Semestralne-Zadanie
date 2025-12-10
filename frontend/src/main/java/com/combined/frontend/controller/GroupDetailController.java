@@ -40,7 +40,6 @@ public class GroupDetailController implements BaseController, NotificationAware 
     private TasksController tasksController;
     private ResourcesController resourcesController;
     private MembersController membersController;
-    private StatsController statsController;
 
     @Override
     public void setApiService(ApiService apiService) {
@@ -79,7 +78,6 @@ public class GroupDetailController implements BaseController, NotificationAware 
                 if (tasksController != null) tasksController.setCurrentlySelectedGroup(group);
                 if (resourcesController != null) resourcesController.setCurrentlySelectedGroup(group);
                 if (membersController != null) membersController.setGroup(group);
-                if (statsController != null) statsController.setGroup(group);
             }
         }
     }
@@ -106,7 +104,6 @@ public class GroupDetailController implements BaseController, NotificationAware 
             String type = message.getType() != null ? message.getType().toUpperCase(Locale.ROOT) : "";
             if (type.startsWith("TASK_")) {
                 if (tasksController != null) tasksController.refreshFromServer();
-                if (statsController != null) statsController.refreshStats();
             } else if (type.startsWith("RESOURCE_")) {
                 if (resourcesController != null) resourcesController.refreshResources();
             } else if (type.startsWith("MEMBER_") || type.contains("USER")) {
@@ -184,20 +181,5 @@ public class GroupDetailController implements BaseController, NotificationAware 
             System.err.println("Failed to load members-view.fxml");
         }
 
-        // Load Stats tab content
-        Tab statsTab = groupTabPane.getTabs().get(4);
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/statistics-view.fxml"));
-            Parent statsPane = loader.load();
-            statsController = loader.getController();
-            statsController.setApiService(apiService);
-            statsController.setCurrentUser(currentUserId, currentNickname);
-            statsController.setMainController(mainController);
-            statsController.setGroup(currentGroup); // Pass the group
-            statsTab.setContent(statsPane);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.err.println("Failed to load statistics-view.fxml");
-        }
     }
 }
