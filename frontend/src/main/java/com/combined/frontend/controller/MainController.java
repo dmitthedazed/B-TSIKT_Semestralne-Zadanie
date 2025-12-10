@@ -10,7 +10,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.Parent;
 import javafx.scene.Node;
 import javafx.scene.layout.StackPane;
@@ -24,6 +23,8 @@ import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 import java.io.IOException;
+import java.time.LocalTime;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MainController {
 
@@ -41,6 +42,7 @@ public class MainController {
     private ApiService apiService;
     private Long currentUserId;
     private String currentNickname;
+    private String currentFirstName;
     private GroupDto selectedGroup; // To hold the currently selected group
     private String activeViewPath;
     private NotificationService notificationService;
@@ -63,7 +65,9 @@ public class MainController {
     public void setCurrentUser(Long userId, String nickname) {
         this.currentUserId = userId;
         this.currentNickname = nickname;
-        usernameLabel.setText("Welcome, " + nickname + "!");
+        this.currentFirstName = nickname;
+        updateGreetingLabel();
+        fetchAndSetFirstName();
         System.out.println("MainController: Current user set to ID: " + userId + ", Nickname: " + nickname);
         // Load default view (e.g., My Groups) after user is set
         loadView("/fxml/groups-view.fxml", "My Groups");
@@ -89,6 +93,40 @@ public class MainController {
         // Set initial title
         sectionTitleLabel.setText("Dashboard");
         setupToastLayer();
+    }
+
+    private void updateGreetingLabel() {
+        if (usernameLabel == null) return;
+        String name = (currentFirstName != null && !currentFirstName.isBlank())
+                ? currentFirstName
+                : (currentNickname != null && !currentNickname.isBlank() ? currentNickname : "there");
+        usernameLabel.setText(buildGreeting() + ", " + name + "!");
+    }
+
+    private String buildGreeting() {
+        if (ThreadLocalRandom.current().nextDouble() < 0.03) {
+            return "How is it going";
+        }
+        int hour = LocalTime.now().getHour();
+        if (hour >= 5 && hour < 12) return "Good morning";
+        if (hour >= 12 && hour < 17) return "Good afternoon";
+        if (hour >= 17 && hour < 22) return "Good evening";
+        return "Good night";
+    }
+
+    private void fetchAndSetFirstName() {
+        if (apiService == null || currentUserId == null) return;
+        new Thread(() -> {
+            try {
+                var user = apiService.getCurrentUser();
+                if (user != null && user.getFirstName() != null && !user.getFirstName().isBlank()) {
+                    currentFirstName = user.getFirstName();
+                    Platform.runLater(this::updateGreetingLabel);
+                }
+            } catch (Exception ignored) {
+                // keep nickname fallback
+            }
+        }).start();
     }
 
     @FXML
