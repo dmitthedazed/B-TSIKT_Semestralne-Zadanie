@@ -8,6 +8,8 @@ import com.combined.backend.dto.UserDto;
 import com.combined.backend.dto.ResourceDto;
 import com.combined.backend.dto.GroupStatsDto;
 import com.combined.backend.dto.ActivityLogDto;
+import com.combined.backend.dto.PasswordChangeDto;
+import com.combined.backend.dto.ProfileUpdateDto;
 import com.combined.frontend.dto.MemberWithRoleDto;
 import com.combined.backend.model.Membership; // New import
 import com.combined.backend.model.User;
@@ -277,6 +279,36 @@ public class ApiService {
             return objectMapper.readValue(response.body(), new TypeReference<List<ActivityLogDto>>() {});
         } else {
             throw new RuntimeException("Failed to load activity logs: " + response.body());
+        }
+    }
+
+    public UserDto getCurrentUser() throws Exception {
+        HttpRequest request = authenticatedGetRequest("/users/me");
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), UserDto.class);
+        } else {
+            throw new RuntimeException("Failed to load profile: " + response.body());
+        }
+    }
+
+    public UserDto updateProfile(ProfileUpdateDto dto) throws Exception {
+        String body = objectMapper.writeValueAsString(dto);
+        HttpRequest request = authenticatedPutRequest("/users/me", body);
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return objectMapper.readValue(response.body(), UserDto.class);
+        } else {
+            throw new RuntimeException("Failed to update profile: " + response.body());
+        }
+    }
+
+    public void changePassword(PasswordChangeDto dto) throws Exception {
+        String body = objectMapper.writeValueAsString(dto);
+        HttpRequest request = authenticatedPostRequest("/users/me/change-password", body);
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() != 200) {
+            throw new RuntimeException("Failed to change password: " + response.body());
         }
     }
 

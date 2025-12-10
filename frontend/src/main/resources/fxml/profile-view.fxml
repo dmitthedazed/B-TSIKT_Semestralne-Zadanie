@@ -4,47 +4,63 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.combined.frontend.controller.ProfileController"
-      spacing="15" alignment="TOP_CENTER">
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fitToWidth="true"
+            fx:controller="com.combined.frontend.controller.ProfileController">
+    <content>
+        <VBox spacing="18" alignment="TOP_CENTER" style="-fx-padding: 20;">
+            <Label text="Profile" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
-    <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
-    </padding>
+            <TitledPane text="Profile information" expanded="true">
+                <content>
+                    <GridPane hgap="12" vgap="10" style="-fx-padding: 12;">
+                        <columnConstraints>
+                            <ColumnConstraints halignment="RIGHT" prefWidth="140"/>
+                            <ColumnConstraints hgrow="ALWAYS" prefWidth="300"/>
+                        </columnConstraints>
+                        <Label text="First name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <TextField fx:id="firstNameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-    <Label text="User Profile" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                        <Label text="Last name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextField fx:id="lastNameField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-    <GridPane hgap="10" vgap="10" alignment="CENTER">
-        <columnConstraints>
-            <ColumnConstraints halignment="RIGHT" prefWidth="120"/>
-            <ColumnConstraints hgrow="ALWAYS" prefWidth="250"/>
-        </columnConstraints>
+                        <Label text="Nickname:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <TextField fx:id="nicknameField" GridPane.rowIndex="2" GridPane.columnIndex="1" editable="false"/>
 
-        <Label text="First Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <TextField fx:id="firstNameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                        <Label text="Email:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                        <TextField fx:id="emailField" GridPane.rowIndex="3" GridPane.columnIndex="1" editable="false"/>
 
-        <Label text="Last Name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <TextField fx:id="lastNameField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <Label text="User ID:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                        <TextField fx:id="userIdField" GridPane.rowIndex="4" GridPane.columnIndex="1" editable="false"/>
+                    </GridPane>
+                </content>
+            </TitledPane>
 
-        <Label text="Nickname:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-        <TextField fx:id="nicknameField" GridPane.rowIndex="2" GridPane.columnIndex="1" editable="false"/>
+            <Button text="Save changes" onAction="#handleUpdateProfile" maxWidth="200"/>
 
-        <Label text="Email:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextField fx:id="emailField" GridPane.rowIndex="3" GridPane.columnIndex="1" editable="false"/>
+            <TitledPane text="Security" expanded="true">
+                <content>
+                    <GridPane hgap="12" vgap="10" style="-fx-padding: 12;">
+                        <columnConstraints>
+                            <ColumnConstraints halignment="RIGHT" prefWidth="160"/>
+                            <ColumnConstraints hgrow="ALWAYS" prefWidth="260"/>
+                        </columnConstraints>
+                        <Label text="Current password:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <PasswordField fx:id="currentPasswordField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-        <Label text="Password:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-        <PasswordField fx:id="passwordField" promptText="Leave blank to keep current" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                        <Label text="New password:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <PasswordField fx:id="newPasswordField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-        <Label text="Confirm Password:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-        <PasswordField fx:id="confirmPasswordField" promptText="Confirm new password" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-    </GridPane>
+                        <Label text="Confirm new password:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <PasswordField fx:id="confirmPasswordField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    </GridPane>
+                </content>
+            </TitledPane>
 
-    <HBox spacing="10" alignment="CENTER">
-        <Button text="Update Profile" onAction="#handleUpdateProfile"/>
-        <Button text="Change Password" onAction="#handleChangePassword"/>
-    </HBox>
+            <Button text="Change password" onAction="#handleChangePassword" maxWidth="200"/>
 
-    <Label fx:id="statusLabel" text="" style="-fx-text-fill: green;"/>
-
-</VBox>
+            <Label fx:id="statusLabel" text="" style="-fx-text-fill: #2563eb;"/>
+        </VBox>
+    </content>
+</ScrollPane>

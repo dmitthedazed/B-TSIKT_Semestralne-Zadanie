@@ -1,6 +1,8 @@
 package com.combined.backend.service;
 
 import com.combined.backend.config.CustomUserDetails;
+import com.combined.backend.dto.PasswordChangeDto;
+import com.combined.backend.dto.ProfileUpdateDto;
 import com.combined.backend.dto.UserDto;
 import com.combined.backend.model.User;
 import com.combined.backend.repository.UserRepository;
@@ -97,7 +99,37 @@ public class UserService implements UserDetailsService {
         return toDto(updatedUser);
     }
 
-    private UserDto toDto(User user) {
+    @Transactional
+    public UserDto updateProfile(Long userId, ProfileUpdateDto dto) {
+        User user = findUserById(userId);
+        if (dto.getFirstName() == null || dto.getFirstName().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name cannot be empty");
+        }
+        user.setFirstName(dto.getFirstName().trim());
+        user.setLastName(dto.getLastName() != null ? dto.getLastName().trim() : null);
+        return toDto(userRepository.save(user));
+    }
+
+    @Transactional
+    public void changePassword(Long userId, PasswordChangeDto dto) {
+        User user = findUserById(userId);
+        if (dto.getCurrentPassword() == null || dto.getNewPassword() == null || dto.getConfirmPassword() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "All password fields are required");
+        }
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New passwords do not match");
+        }
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+        if (dto.getNewPassword().length() < 6) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password must be at least 6 characters");
+        }
+        user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    public UserDto toDto(User user) {
         return new UserDto(user.getUserId(), user.getFirstName(), user.getLastName(), user.getNickname(), user.getEmail());
     }
 }

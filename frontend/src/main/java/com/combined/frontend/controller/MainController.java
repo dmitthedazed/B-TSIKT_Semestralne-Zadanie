@@ -9,7 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Pane;
+import javafx.scene.Parent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -104,7 +104,7 @@ public class MainController {
         System.out.println("MainController: Attempting to load view: " + fxmlPath + " with title: " + title);
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-            Pane view = loader.load();
+            Parent view = loader.load();
             System.out.println("MainController: Successfully loaded FXML: " + fxmlPath);
 
             // Pass ApiService and user info to the loaded controller
