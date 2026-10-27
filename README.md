@@ -4,12 +4,13 @@
 
 Task manager for study groups. JavaFX desktop client, Spring Boot backend.
 
+Semester project for *Tvorba softvéru v IKT*. Weekly exercises: [B-TSIKT](https://github.com/dmitthedazed/B-TSIKT).
+
 [![CI](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml/badge.svg)](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml)
-![Java 21](https://img.shields.io/badge/Java-21-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?style=flat-square&logo=springboot&logoColor=white)
-![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?style=flat-square&logo=java&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
+![Java 21](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?logo=springboot&logoColor=white)
+![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?logo=java&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
 
 🇬🇧 **English** · 🇸🇰 [Slovenčina](README.sk.md)
 
@@ -313,10 +314,10 @@ STOMP topics: `/topic/group/{groupId}` and `/topic/user/{userId}`. Each message 
 
 GitHub Copilot and Claude (Anthropic) were used for boilerplate and DTOs, debugging, review suggestions, tests and design discussion. The generated code was reviewed, tested and edited by hand.
 
-## Author
+---
 
-Dmitrii Savin ([@dmitthedazed](https://github.com/dmitthedazed)), semester project.
+<div align="center">
 
-## License
+Dmytrii Savin ([@dmitthedazed](https://github.com/dmitthedazed)). Licensed under the [MIT License](LICENSE).
 
-[MIT](LICENSE)
+</div>
