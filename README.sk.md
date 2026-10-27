@@ -2,7 +2,7 @@
 
 # TaskBoard
 
-Správca úloh pre študijné skupiny. Desktopový klient v JavaFX, backend v Spring Boot.
+**Správca úloh pre študijné skupiny.** Desktopový klient v JavaFX, backend v Spring Boot.
 
 Semestrálny projekt z predmetu *Tvorba softvéru v IKT*. Týždenné cvičenia: [B-TSIKT](https://github.com/dmitthedazed/B-TSIKT).
 
@@ -12,7 +12,7 @@ Semestrálny projekt z predmetu *Tvorba softvéru v IKT*. Týždenné cvičenia:
 ![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?logo=java&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
 
-🇬🇧 [English](README.md) · 🇸🇰 **Slovenčina**
+<p align="center"><a href="README.md">English</a> · <b>Slovenčina</b></p>
 
 <img src="docs/screenshots/login.png" width="32%" alt="Prihlásenie">
 <img src="docs/screenshots/dashboard.png" width="32%" alt="Hlavný panel">

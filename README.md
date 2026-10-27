@@ -2,7 +2,7 @@
 
 # TaskBoard
 
-Task manager for study groups. JavaFX desktop client, Spring Boot backend.
+**Task manager for study groups.** JavaFX desktop client, Spring Boot backend.
 
 Semester project for *Tvorba softvéru v IKT*. Weekly exercises: [B-TSIKT](https://github.com/dmitthedazed/B-TSIKT).
 
@@ -12,7 +12,7 @@ Semester project for *Tvorba softvéru v IKT*. Weekly exercises: [B-TSIKT](https
 ![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?logo=java&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
 
-🇬🇧 **English** · 🇸🇰 [Slovenčina](README.sk.md)
+<p align="center"><b>English</b> · <a href="README.sk.md">Slovenčina</a></p>
 
 <img src="docs/screenshots/login.png" width="32%" alt="Login">
 <img src="docs/screenshots/dashboard.png" width="32%" alt="Dashboard">
