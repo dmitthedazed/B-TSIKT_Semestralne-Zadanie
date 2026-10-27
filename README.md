@@ -6,11 +6,12 @@
 
 Semester project for *Tvorba softvéru v IKT*. Weekly exercises: [B-TSIKT](https://github.com/dmitthedazed/B-TSIKT).
 
-[![CI](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml/badge.svg)](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml)
-![Java 21](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?logo=springboot&logoColor=white)
-![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?logo=java&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
+[![CI](https://img.shields.io/github/actions/workflow/status/dmitthedazed/B-TSIKT_Semestralne-Zadanie/ci.yml?style=flat-square&label=CI)](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml)
+![Java 21](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white&style=flat-square)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?logo=springboot&logoColor=white&style=flat-square)
+![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?logo=java&logoColor=white&style=flat-square)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white&style=flat-square)
+[![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
 
 <p align="center"><b>English</b> · <a href="README.sk.md">Slovenčina</a></p>
 
@@ -22,6 +23,9 @@ Semester project for *Tvorba softvéru v IKT*. Weekly exercises: [B-TSIKT](https
 <img src="docs/screenshots/profile.png" width="32%" alt="Profile">
 
 </div>
+
+> [!NOTE]
+> Archived. The course is over, so this repository is read-only and kept for reference.
 
 ## Features
 
@@ -314,10 +318,6 @@ STOMP topics: `/topic/group/{groupId}` and `/topic/user/{userId}`. Each message 
 
 GitHub Copilot and Claude (Anthropic) were used for boilerplate and DTOs, debugging, review suggestions, tests and design discussion. The generated code was reviewed, tested and edited by hand.
 
----
+## License
 
-<div align="center">
-
-Dmytrii Savin ([@dmitthedazed](https://github.com/dmitthedazed)). Licensed under the [MIT License](LICENSE).
-
-</div>
+[MIT](LICENSE) © Dmytrii Savin

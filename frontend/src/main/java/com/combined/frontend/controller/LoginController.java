@@ -70,14 +70,6 @@ public class LoginController {
         performLogin(email, password);
     }
 
-    @FXML
-    private void handleAutoLoginOccaecat() {
-        String email = "dmitriyuzat@gmail.com";
-        String password = "REDACTED";
-        emailField.setText(email);
-        passwordField.setText(password);
-        performLogin(email, password);
-    }
 
     @FXML
     private void handleTryDemo() {

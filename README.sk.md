@@ -6,11 +6,12 @@
 
 Semestrálny projekt z predmetu *Tvorba softvéru v IKT*. Týždenné cvičenia: [B-TSIKT](https://github.com/dmitthedazed/B-TSIKT).
 
-[![CI](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml/badge.svg)](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml)
-![Java 21](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?logo=springboot&logoColor=white)
-![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?logo=java&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
+[![CI](https://img.shields.io/github/actions/workflow/status/dmitthedazed/B-TSIKT_Semestralne-Zadanie/ci.yml?style=flat-square&label=CI)](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml)
+![Java 21](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white&style=flat-square)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?logo=springboot&logoColor=white&style=flat-square)
+![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?logo=java&logoColor=white&style=flat-square)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white&style=flat-square)
+[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-lightgrey?style=flat-square)](LICENSE)
 
 <p align="center"><a href="README.md">English</a> · <b>Slovenčina</b></p>
 
@@ -22,6 +23,9 @@ Semestrálny projekt z predmetu *Tvorba softvéru v IKT*. Týždenné cvičenia:
 <img src="docs/screenshots/profile.png" width="32%" alt="Profil">
 
 </div>
+
+> [!NOTE]
+> Archivované. Predmet je ukončený, repozitár je len na čítanie a slúži ako referencia.
 
 ## Funkcie
 
@@ -314,10 +318,6 @@ STOMP témy: `/topic/group/{groupId}` a `/topic/user/{userId}`. Každá správa 
 
 GitHub Copilot a Claude (Anthropic) sa použili na boilerplate a DTO, ladenie, návrhy pri revízii, testy a diskusiu o návrhu. Vygenerovaný kód som prešiel, otestoval a upravil ručne.
 
----
+## Licencia
 
-<div align="center">
-
-Dmytrii Savin ([@dmitthedazed](https://github.com/dmitthedazed)). Licencia [MIT](LICENSE).
-
-</div>
+[MIT](LICENSE) © Dmytrii Savin
