@@ -1,253 +1,128 @@
 <div align="center">
 
-# 📚 TaskBoard
+# TaskBoard
 
-### Kolaboratívna platforma pre úlohy
-
-*Moderný JavaFX desktopový klient + Spring Boot backend pre študijné skupiny*
+Správca úloh pre študijné skupiny. Desktopový klient v JavaFX, backend v Spring Boot.
 
 [![CI](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml/badge.svg)](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml)
+![Java 21](https://img.shields.io/badge/Java-21-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?style=flat-square&logo=java&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
+[![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-lightgrey?style=flat-square)](LICENSE)
 
-[![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?style=for-the-badge&logo=java&logoColor=white)](https://openjfx.io/)
-[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![Google OAuth](https://img.shields.io/badge/Google%20OAuth-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/identity)
-[![License](https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge)](LICENSE)
+🇬🇧 [English](README.md) · 🇸🇰 **Slovenčina**
 
-🇬🇧 [English](README.md) | 🇸🇰 **Slovenčina**
-
-[Funkcie](#-funkcie) •
-[Snímky obrazovky](#-snímky-obrazovky) •
-[Technológie](#️-technológie) •
-[Inštalácia](#-inštalácia) •
-[Použitie](#-použitie) •
-[Architektúra](#️-architektúra) •
-[API](#-api-referencia) •
-[WebSocket](#-websocket-udalosti) •
-[Štruktúra projektu](#-štruktúra-projektu) •
-[Bezpečnosť](#-bezpečnosť) •
-[Testovanie](#-testovanie) •
-[Použitie AI](#-použitie-ai) •
-[Autor](#-autor)
+<img src="docs/screenshots/login.png" width="32%" alt="Prihlásenie">
+<img src="docs/screenshots/dashboard.png" width="32%" alt="Hlavný panel">
+<img src="docs/screenshots/group.png" width="32%" alt="Detail skupiny">
+<img src="docs/screenshots/tasks.png" width="32%" alt="Úlohy">
+<img src="docs/screenshots/stats.png" width="32%" alt="Štatistiky">
+<img src="docs/screenshots/profile.png" width="32%" alt="Profil">
 
 </div>
 
----
+## Funkcie
 
-## ✨ Funkcie
+- **Skupiny** s tromi rolami: Tvorca, Admin, Člen. Členov možno pridať e-mailom.
+- **Úlohy** s riešiteľom, termínom a stavom (Otvorená → Prebieha → Hotovo). Každý používateľ má osobný zoznam úloh.
+- **Zdroje**: súbory a odkazy, uložené po skupinách.
+- **Štatistiky**: aktivita skupiny, grafy dokončených úloh a 90-dňová história aktivít.
+- **Živé aktualizácie** cez WebSocket (STOMP), zmeny sa v ostatných klientoch zobrazia bez obnovenia.
+- **Prihlásenie**: JWT a Google OAuth 2.0; heslá sa hashujú cez BCrypt.
+- **CI**: GitHub Actions spúšťa `mvn -B verify` pri pushi a pull requeste.
 
-<table>
-<tr>
-<td width="50%">
-
-### 👥 Skupinová spolupráca
-- Vytváranie a správa študijných skupín
-- Prístup podľa rolí (Tvorca, Admin, Člen)
-- Pozývanie členov e-mailom
-- Aktivita členov v reálnom čase
-
-</td>
-<td width="50%">
-
-### ✅ Správa úloh
-- Vytváranie, priraďovanie a sledovanie úloh
-- Sledovanie stavu (Otvorená → Prebieha → Hotovo)
-- Správa termínov
-- Osobný prehľad úloh
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### 📁 Zdieľanie zdrojov
-- Nahrávanie súborov a zdieľanie odkazov
-- Organizácia podľa študijných skupín
-- Sťahovanie a správa materiálov
-- Podpora rôznych typov súborov
-
-</td>
-<td width="50%">
-
-### 📊 Analytika a štatistiky
-- Štatistiky aktivity skupiny
-- Grafy dokončenia úloh
-- 90-dňová história aktivít
-- Vizuálne sledovanie pokroku
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### 🔐 Bezpečnosť
-- JWT autentifikácia
-- **Google OAuth 2.0** prihlásenie
-- Bezpečné hashovanie hesiel
-- Oprávnenia podľa rolí
-- Chránené API endpointy
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### 🚀 CI/CD Pipeline
-- Automatizované testovanie cez GitHub Actions
-- Overenie buildu pri každom pushu
-- Kontrola kvality kódu
-- Kontinuálna integrácia
-
-</td>
-<td width="50%">
-
-### ⚡ Aktualizácie v reálnom čase
-- WebSocket notifikácie
-- Živé aktualizácie úloh
-- Upozornenia na aktivitu členov
-- Okamžitá synchronizácia
-
-</td>
-</tr>
-</table>
-
----
-
-## 📸 Snímky obrazovky
-
-<div align="center">
-
-| Prihlásenie | Hlavný panel | Detail skupiny |
-|:---:|:---:|:---:|
-| ![Login](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) | ![Group](docs/screenshots/group.png) |
-
-| Zobrazenie úloh | Štatistiky | Profil |
-|:---:|:---:|:---:|
-| ![Tasks](docs/screenshots/tasks.png) | ![Stats](docs/screenshots/stats.png) | ![Profile](docs/screenshots/profile.png) |
-
-</div>
-
----
-
-## 🛠️ Technológie
-
-<div align="center">
+## Technológie
 
 | Vrstva | Technológia |
-|:---:|:---|
-| **Frontend** | JavaFX 21, FXML, CSS |
-| **Backend** | Spring Boot 3.3.1, Spring Security |
-| **Databáza** | SQLite (prod), H2 (demo) |
-| **Autentifikácia** | JWT (JSON Web Tokens) |
-| **Reálny čas** | WebSocket (STOMP) |
-| **Build** | Maven (multi-modul) |
+|:---|:---|
+| Frontend | JavaFX 21, FXML, CSS |
+| Backend | Spring Boot 3.3.1, Spring Security |
+| Databáza | SQLite (prod), H2 in-memory (demo) |
+| Autentifikácia | JWT, Google OAuth 2.0 |
+| Reálny čas | WebSocket (STOMP) |
+| Build | Maven, multi-modul (`backend`, `frontend`) |
 
-</div>
+## Inštalácia
 
----
+Potrebné: [Java 21](https://adoptium.net/) a [Maven 3.8+](https://maven.apache.org/download.cgi). V koreňovom adresári repozitára:
 
-## 📦 Inštalácia
-
-### Požiadavky
-
-- **Java 21** alebo vyššia ([Stiahnuť](https://adoptium.net/))
-- **Maven 3.8+** ([Stiahnuť](https://maven.apache.org/download.cgi))
-- Git
-
-### Rýchly štart
-
-```bash
-# Klonovanie repozitára
-git clone https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie.git
-cd B-TSIKT_Semestralne-Zadanie
-
-# Zostavenie projektu
+```sh
 mvn clean install
+```
 
-# Spustenie backendu (Terminál 1)
+## Spustenie
+
+Backend (terminál 1), potom frontend (terminál 2):
+
+```sh
 mvn -pl backend spring-boot:run
+```
 
-# Spustenie frontendu (Terminál 2)
+```sh
 mvn -pl frontend javafx:run
 ```
 
-> 📝 **Poznámka:** SQLite databázový súbor sa vytvorí automaticky pri prvom spustení.
+> [!NOTE]
+> Súbor SQLite sa vytvorí pri prvom spustení.
 
----
+### Demo režim
 
-## 🚀 Použitie
+H2 in-memory databáza s predvyplnenými dátami, backend na porte `8081`:
 
-### 🎮 Demo režim
+```sh
+mvn -pl backend spring-boot:run -Dspring-boot.run.profiles=demo
+```
 
-Vyskúšajte aplikáciu okamžite s predvyplnenými dátami:
-
-```bash
-# Spustenie demo backendu (H2 in-memory, port 8081)
-cd backend
-mvn spring-boot:run "-Dspring-boot.run.profiles=demo"
-
-# Spustenie frontendu smerujúceho na demo
+```sh
 mvn -pl frontend javafx:run -DAPI_BASE_URL=http://localhost:8081/api
 ```
 
-Alebo jednoducho kliknite na **"Vyskúšať demo"** na prihlasovacej obrazovke!
+Kliknite na **Try demo** na prihlasovacej obrazovke alebo sa prihláste ručne:
 
-| Demo prihlasovacie údaje |  |
+| E-mail | Heslo |
 |:---|:---|
-| 📧 Email | `demo@example.com` |
-| 🔑 Heslo | `demo123` |
-
-### Predvolené porty
+| `demo@example.com` | `demo123` |
 
 | Služba | Port |
-|:---:|:---:|
-| Backend (Produkcia) | `8080` |
-| Backend (Demo) | `8081` |
+|:---|:---:|
+| Backend (produkcia) | `8080` |
+| Backend (demo) | `8081` |
 
----
+### Testy
 
-## 🏗️ Architektúra
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        KLIENT (JavaFX)                       │
-├─────────────────────────────────────────────────────────────┤
-│  Kontroléry (FXML)   │  ApiService  │  WebSocket Klient     │
-│         ↓            │      ↓       │         ↓             │
-│       Pohľady        │  HTTP/JWT    │    STOMP Správy       │
-└──────────────────────┴──────────────┴───────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      SERVER (Spring Boot)                    │
-├─────────────────────────────────────────────────────────────┤
-│  REST Kontroléry   │  WebSocket Handler  │  Security Filter │
-│         ↓          │         ↓           │        ↓         │
-│     Služby         │    Notifikačná      │   JWT Validátor  │
-│         ↓          │      služba         │                  │
-│   Repozitáre       │                     │                  │
-│         ↓          │                     │                  │
-│    JPA/Hibernate   │                     │                  │
-│         ↓          │                     │                  │
-│      SQLite        │                     │                  │
-└─────────────────────────────────────────────────────────────┘
+```sh
+mvn test
 ```
 
-### 📊 Dátový model
+Iba backend: `mvn -pl backend test`.
+
+## Architektúra
+
+```
+Klient JavaFX                          Server Spring Boot
+┌─────────────────────┐   HTTP + JWT   ┌──────────────────────────────┐
+│ FXML controllery    │ ─────────────► │ REST controllery + JWT filter│
+│ ApiService          │                │ Services → Repositories (JPA)│
+│ WebSocket klient    │ ◄───────────── │ WebSocketNotificationService │──► SQLite
+└─────────────────────┘     STOMP      └──────────────────────────────┘
+```
+
+<details>
+<summary><b>Dátový model</b></summary>
 
 ```mermaid
 erDiagram
-    USERS ||--o{ MEMBERSHIPS : má
-    USERS ||--o{ TASKS : vytvára
-    USERS ||--o{ RESOURCES : nahráva
-    USERS ||--o{ ACTIVITY_LOG : generuje
-    
-    GROUPS ||--o{ MEMBERSHIPS : obsahuje
-    GROUPS ||--o{ TASKS : má
-    GROUPS ||--o{ RESOURCES : ukladá
-    GROUPS ||--o{ ACTIVITY_LOG : sleduje
-    
+    USERS ||--o{ MEMBERSHIPS : has
+    USERS ||--o{ TASKS : creates
+    USERS ||--o{ RESOURCES : uploads
+    USERS ||--o{ ACTIVITY_LOG : generates
+
+    GROUPS ||--o{ MEMBERSHIPS : contains
+    GROUPS ||--o{ TASKS : has
+    GROUPS ||--o{ RESOURCES : stores
+    GROUPS ||--o{ ACTIVITY_LOG : tracks
+
     USERS {
         int user_id PK
         string nickname
@@ -255,7 +130,7 @@ erDiagram
         string password_hash
         datetime created_at
     }
-    
+
     GROUPS {
         int group_id PK
         string name
@@ -263,7 +138,7 @@ erDiagram
         int created_by FK
         datetime created_at
     }
-    
+
     MEMBERSHIPS {
         int id PK
         int user_id FK
@@ -271,7 +146,7 @@ erDiagram
         enum role "CREATOR|ADMIN|MEMBER"
         datetime joined_at
     }
-    
+
     TASKS {
         int task_id PK
         int group_id FK
@@ -283,7 +158,7 @@ erDiagram
         datetime deadline
         datetime created_at
     }
-    
+
     RESOURCES {
         int resource_id PK
         int group_id FK
@@ -295,7 +170,7 @@ erDiagram
         string description
         datetime uploaded_at
     }
-    
+
     ACTIVITY_LOG {
         int id PK
         int user_id FK
@@ -307,88 +182,98 @@ erDiagram
     }
 ```
 
----
-
-## 📡 API Referencia
-
-<details>
-<summary><b>🔐 Autentifikácia</b></summary>
-
-| Metóda | Endpoint | Popis |
-|:---:|:---|:---|
-| `POST` | `/api/auth/register` | Registrácia nového používateľa |
-| `POST` | `/api/auth/login` | Prihlásenie a získanie JWT |
-
 </details>
 
 <details>
-<summary><b>👤 Používatelia</b></summary>
+<summary><b>Štruktúra projektu</b></summary>
+
+```
+├── backend/                 # Spring Boot
+│   └── src/main/
+│       ├── java/com/combined/backend/
+│       │   ├── config/      # Security, WebSocket
+│       │   ├── controller/  # REST endpointy
+│       │   ├── dto/
+│       │   ├── model/       # JPA entity
+│       │   ├── repository/
+│       │   └── service/
+│       └── resources/       # application.properties, application-demo.properties
+├── frontend/                # JavaFX
+│   └── src/main/
+│       ├── java/            # Controllery, služby
+│       └── resources/       # fxml/, css/, img/
+├── docs/screenshots/
+└── pom.xml                  # Rodičovský POM
+```
+
+</details>
+
+## API
+
+Všetky endpointy okrem `/api/auth/*` vyžadujú JWT.
+
+<details>
+<summary><b>Autentifikácia a používatelia</b></summary>
 
 | Metóda | Endpoint | Popis |
 |:---:|:---|:---|
-| `GET` | `/api/users/me` | Získať aktuálneho používateľa |
-| `PUT` | `/api/users/me` | Aktualizovať profil |
+| `POST` | `/api/auth/register` | Registrácia |
+| `POST` | `/api/auth/login` | Prihlásenie, získanie JWT |
+| `GET` | `/api/users/me` | Aktuálny používateľ |
+| `PUT` | `/api/users/me` | Úprava profilu |
 | `POST` | `/api/users/me/change-password` | Zmena hesla |
 
 </details>
 
 <details>
-<summary><b>👥 Skupiny</b></summary>
+<summary><b>Skupiny a členstvá</b></summary>
 
 | Metóda | Endpoint | Popis |
 |:---:|:---|:---|
-| `GET` | `/api/groups` | Zoznam všetkých skupín |
-| `GET` | `/api/groups/my` | Zoznam mojich skupín |
-| `GET` | `/api/groups/available` | Zoznam dostupných skupín |
-| `POST` | `/api/groups` | Vytvoriť skupinu |
+| `GET` | `/api/groups` | Všetky skupiny |
+| `GET` | `/api/groups/my` | Moje skupiny |
+| `GET` | `/api/groups/available` | Skupiny na pripojenie |
+| `POST` | `/api/groups` | Vytvorenie skupiny |
 | `GET` | `/api/groups/{id}` | Detail skupiny |
-
-</details>
-
-<details>
-<summary><b>🤝 Členstvá</b></summary>
-
-| Metóda | Endpoint | Popis |
-|:---:|:---|:---|
-| `POST` | `/api/memberships/join/{groupId}` | Pridať sa do skupiny |
-| `POST` | `/api/memberships/leave/{groupId}` | Opustiť skupinu |
+| `POST` | `/api/memberships/join/{groupId}` | Pripojenie |
+| `POST` | `/api/memberships/leave/{groupId}` | Opustenie |
 | `GET` | `/api/memberships/group/{groupId}/members` | Zoznam členov |
-| `POST` | `/api/memberships/group/{groupId}/add-member` | Pridať člena |
-| `POST` | `/api/memberships/group/{groupId}/add-member-by-email` | Pridať podľa emailu |
-| `PUT` | `/api/memberships/group/{groupId}/update-role` | Zmeniť rolu |
-| `DELETE` | `/api/memberships/group/{groupId}/remove-member` | Odstrániť člena |
+| `POST` | `/api/memberships/group/{groupId}/add-member` | Pridanie člena |
+| `POST` | `/api/memberships/group/{groupId}/add-member-by-email` | Pridanie e-mailom |
+| `PUT` | `/api/memberships/group/{groupId}/update-role` | Zmena roly |
+| `DELETE` | `/api/memberships/group/{groupId}/remove-member` | Odstránenie člena |
 
 </details>
 
 <details>
-<summary><b>✅ Úlohy</b></summary>
+<summary><b>Úlohy</b></summary>
 
 | Metóda | Endpoint | Popis |
 |:---:|:---|:---|
-| `POST` | `/api/tasks` | Vytvoriť úlohu |
-| `GET` | `/api/tasks/group/{id}` | Zoznam úloh skupiny |
-| `GET` | `/api/tasks/my` | Zoznam mojich úloh |
-| `PUT` | `/api/tasks/{id}` | Aktualizovať úlohu |
-| `DELETE` | `/api/tasks/{id}` | Odstrániť úlohu |
+| `POST` | `/api/tasks` | Vytvorenie |
+| `GET` | `/api/tasks/group/{id}` | Úlohy skupiny |
+| `GET` | `/api/tasks/my` | Moje úlohy |
+| `PUT` | `/api/tasks/{id}` | Úprava |
+| `DELETE` | `/api/tasks/{id}` | Zmazanie |
 
 </details>
 
 <details>
-<summary><b>📁 Zdroje</b></summary>
+<summary><b>Zdroje</b></summary>
 
 | Metóda | Endpoint | Popis |
 |:---:|:---|:---|
-| `GET` | `/api/resources/group/{id}` | Zoznam zdrojov |
-| `POST` | `/api/resources` | Vytvoriť zdroj (odkaz) |
-| `POST` | `/api/resources/upload` | Nahrať súbor |
-| `PUT` | `/api/resources/{id}` | Aktualizovať zdroj |
-| `DELETE` | `/api/resources/{id}` | Odstrániť zdroj |
-| `GET` | `/api/resources/{id}/download` | Stiahnuť súbor |
+| `GET` | `/api/resources/group/{id}` | Zoznam |
+| `POST` | `/api/resources` | Vytvorenie (odkaz) |
+| `POST` | `/api/resources/upload` | Nahratie súboru |
+| `PUT` | `/api/resources/{id}` | Úprava |
+| `DELETE` | `/api/resources/{id}` | Zmazanie |
+| `GET` | `/api/resources/{id}/download` | Stiahnutie |
 
 </details>
 
 <details>
-<summary><b>📊 Štatistiky a aktivita</b></summary>
+<summary><b>Štatistiky a aktivita</b></summary>
 
 | Metóda | Endpoint | Popis |
 |:---:|:---|:---|
@@ -398,126 +283,40 @@ erDiagram
 
 </details>
 
----
+### WebSocket
 
-## 🔌 WebSocket udalosti
+STOMP témy: `/topic/group/{groupId}` a `/topic/user/{userId}`. Každá správa obsahuje `type` a `message`.
 
-Notifikácie v reálnom čase cez STOMP nad WebSocket:
-
-| Udalosť | Popis |
+| Typ | Význam |
 |:---|:---|
-| `task.created` | Nová úloha pridaná |
-| `task.updated` | Úloha upravená |
-| `task.deleted` | Úloha odstránená |
-| `task.status` | Stav zmenený |
-| `resource.added` | Nový materiál nahraný |
-| `member.joined` | Nový člen sa pridal |
-| `member.role` | Rola zmenená |
+| `TASK_CREATED` | Úloha pridaná |
+| `TASK_UPDATED`, `TASK_UPDATE` | Úloha zmenená |
+| `TASK_DELETED` | Úloha odstránená |
+| `RESOURCE_UPLOADED` | Nový materiál |
+| `USER_JOINED` | Nový člen |
 
----
+## Bezpečnosť
 
-## 📁 Štruktúra projektu
-
-```
-B-TSIKT_Semestralne-Zadanie
-├──  backend/                    # Spring Boot backend
-│   ├──  src/main/java/com/combined/backend/
-│   │   ├──  config/             # Konfigurácia Security, WebSocket
-│   │   ├──  controller/         # REST endpointy
-│   │   ├──  dto/                # Data transfer objekty
-│   │   ├──  model/              # JPA entity
-│   │   ├──  repository/         # Dátová vrstva
-│   │   ├──  service/            # Biznis logika
-│   │   └──  BackendApplication.java
-│   └──  src/main/resources/
-│       ├──  application.properties
-│       └──  application-demo.properties
-├──  frontend/                   # JavaFX klient
-│   ├──  src/main/java/          # Kontroléry a služby
-│   └──  src/main/resources/
-│       ├──  fxml/               # UI rozloženia
-│       ├──  css/                # Štýly
-│       └──  img/                # Obrázky
-├──  pom.xml                     # Rodičovský POM
-└──  README.md
-```
-
----
-
-## 🔒 Bezpečnosť
-
-| Funkcia | Implementácia |
+| Oblasť | Implementácia |
 |:---|:---|
-| **Autentifikácia** | JWT tokeny s konfigurovateľnou expiráciou |
-| **Ukladanie hesiel** | BCrypt hashovanie |
-| **Autorizácia** | Podľa rolí (CREATOR > ADMIN > MEMBER) |
-| **Ochrana API** | Všetky endpointy vyžadujú platný JWT |
-| **CSRF** | Vypnuté (stateless API) |
-| **Identita používateľa** | `@AuthenticationPrincipal` zabraňuje podvrhnutiu |
+| Autentifikácia | JWT s konfigurovateľnou expiráciou, Google OAuth 2.0 |
+| Heslá | BCrypt |
+| Autorizácia | Podľa rolí: CREATOR > ADMIN > MEMBER |
+| CSRF | Vypnuté (stateless API) |
+| Identita | `@AuthenticationPrincipal` zabraňuje podvrhnutiu |
 
-### Pravidlá prístupu
+- **Tvorca**: plná kontrola, nemôže byť odstránený ani degradovaný.
+- **Admin**: spravuje členov (okrem tvorcu), zdroje a úlohy.
+- **Člen**: zobrazuje zdroje, spravuje vlastné úlohy.
 
-- ✅ **Tvorca**: Plná kontrola, nemôže byť odstránený/degradovaný
-- ✅ **Admin**: Správa členov (okrem tvorcu), správa zdrojov/úloh
-- ✅ **Člen**: Zobrazenie zdrojov, správa vlastných úloh
+## Použitie AI
 
----
+GitHub Copilot a Claude (Anthropic) sa použili na boilerplate a DTO, ladenie, návrhy pri revízii, testy a diskusiu o návrhu. Vygenerovaný kód som prešiel, otestoval a upravil ručne.
 
-## 🧪 Testovanie
+## Autor
 
-```bash
-# Spustenie všetkých testov
-mvn test
+Dmitrii Savin ([@dmitthedazed](https://github.com/dmitthedazed)), semestrálny projekt.
 
-# Spustenie iba backend testov
-mvn -pl backend test
+## Licencia
 
-# Spustenie s pokrytím kódu
-mvn -pl backend test jacoco:report
-```
-
----
-
-## 🤖 Použitie AI
-
-Tento projekt bol vyvinutý s pomocou AI nástrojov, konkrétne **GitHub Copilot** a **Claude** (Anthropic). AI bola použitá na:
-
-| Oblasť | Ako AI pomohla |
-|:---|:---|
-| **Generovanie kódu** | Zrýchlenie písania boilerplate kódu, DTO a opakujúcich sa vzorov |
-| **Ladenie** | Identifikácia problémov a návrhy opráv pre komplexné chyby |
-| **Revízia kódu** | Návrhy na zlepšenie kvality kódu a osvedčených postupov |
-| **Testovanie** | Pomoc pri písaní unit a integračných testov |
-| **Architektúra** | Diskusia o návrhových vzoroch a architektonických rozhodnutiach |
-
-> ⚠️ **Dôležité:** Všetok kód generovaný AI bol starostlivo skontrolovaný, otestovaný a upravený. AI slúžila ako nástroj produktivity, nie ako náhrada za porozumenie a kritické myslenie.
-
----
-
-## 👨‍💻 Autor
-
-<div align="center">
-
-**Dmitrii Savin**
-
-[![GitHub](https://img.shields.io/badge/GitHub-dmitthedazed-181717?style=for-the-badge&logo=github)](https://github.com/dmitthedazed)
-
-*Semestrálny projekt — B-TSIKT*
-
-</div>
-
----
-
-## 📄 Licencia
-
-Tento projekt je licencovaný pod MIT licenciou - pozrite súbor [LICENSE](LICENSE) pre podrobnosti.
-
----
-
-<div align="center">
-
-**⭐ Dajte hviezdu tomuto repozitáru, ak vám pomohol!**
-
-Vytvorené s ❤️ a ☕
-
-</div>
+[MIT](LICENSE)

@@ -1,241 +1,115 @@
 <div align="center">
 
-# 📚 TaskBoard
+# TaskBoard
 
-### Collaborative Task Platform
-
-*A modern JavaFX desktop client + Spring Boot backend for collaborative study groups*
+Task manager for study groups. JavaFX desktop client, Spring Boot backend.
 
 [![CI](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml/badge.svg)](https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie/actions/workflows/ci.yml)
+![Java 21](https://img.shields.io/badge/Java-21-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?style=flat-square&logo=java&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?style=flat-square&logo=sqlite&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
 
-[![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![JavaFX](https://img.shields.io/badge/JavaFX-21-007396?style=for-the-badge&logo=java&logoColor=white)](https://openjfx.io/)
-[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![Google OAuth](https://img.shields.io/badge/Google%20OAuth-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://developers.google.com/identity)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+🇬🇧 **English** · 🇸🇰 [Slovenčina](README.sk.md)
 
-🇬🇧 **English** | 🇸🇰 [Slovenčina](README.sk.md)
-
-[Features](#-features) •
-[Screenshots](#-screenshots) •
-[Tech Stack](#️-tech-stack) •
-[Installation](#-installation) •
-[Usage](#-usage) •
-[Architecture](#️-architecture) •
-[API](#-api-reference) •
-[WebSocket](#websocket-events) •
-[Project Structure](#-project-structure) •
-[Security](#-security) •
-[Testing](#testing) •
-[AI Assistance](#-ai-assistance) •
-[Author](#-author)
+<img src="docs/screenshots/login.png" width="32%" alt="Login">
+<img src="docs/screenshots/dashboard.png" width="32%" alt="Dashboard">
+<img src="docs/screenshots/group.png" width="32%" alt="Group detail">
+<img src="docs/screenshots/tasks.png" width="32%" alt="Tasks">
+<img src="docs/screenshots/stats.png" width="32%" alt="Statistics">
+<img src="docs/screenshots/profile.png" width="32%" alt="Profile">
 
 </div>
 
----
+## Features
 
-## ✨ Features
+- **Groups** with three roles: Creator, Admin, Member. Members can be added by email.
+- **Tasks** with an assignee, a deadline and a status (Open → In Progress → Done). Each user has a personal task list.
+- **Resources**: files and links, kept per group.
+- **Statistics**: group activity, task completion charts and a 90-day activity history.
+- **Live updates** over WebSocket (STOMP), so changes show up in other clients without a refresh.
+- **Auth**: JWT and Google OAuth 2.0 sign-in; passwords are hashed with BCrypt.
+- **CI**: GitHub Actions runs `mvn -B verify` on pushes and pull requests.
 
-<table>
-<tr>
-<td width="50%">
-
-### 👥 Group Collaboration
-- Create and manage study groups
-- Role-based access (Creator, Admin, Member)
-- Invite members by email
-- Real-time member activity
-
-</td>
-<td width="50%">
-
-### ✅ Task Management
-- Create, assign, and track tasks
-- Status tracking (Open → In Progress → Done)
-- Deadline management
-- Personal task dashboard
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### 📁 Resource Sharing
-- Upload files and share links
-- Organized by study groups
-- Download and manage materials
-- File type support
-
-</td>
-<td width="50%">
-
-### 📊 Analytics & Statistics
-- Group activity statistics
-- Task completion charts
-- 90-day activity history
-- Visual progress tracking
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### 🔐 Security
-- JWT-based authentication
-- **Google OAuth 2.0** sign-in
-- Secure password hashing
-- Role-based permissions
-- Protected API endpoints
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### 🚀 CI/CD Pipeline
-- Automated testing with GitHub Actions
-- Build verification on every push
-- Code quality checks
-- Continuous integration
-
-</td>
-<td width="50%">
-
-### ⚡ Real-time Updates
-- WebSocket notifications
-- Live task updates
-- Member activity alerts
-- Instant sync across clients
-
-</td>
-</tr>
-</table>
-
----
-
-## 📸 Screenshots
-
-<div align="center">
-
-
-| Login Screen | Dashboard | Group Detail |
-|:---:|:---:|:---:|
-| ![Login](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) | ![Group](docs/screenshots/group.png) |
-
-| Tasks View | Statistics | Profile |
-|:---:|:---:|:---:|
-| ![Tasks](docs/screenshots/tasks.png) | ![Stats](docs/screenshots/stats.png) | ![Profile](docs/screenshots/profile.png) |
-
-</div>
-
----
-
-## 🛠️ Tech Stack
-
-<div align="center">
+## Stack
 
 | Layer | Technology |
-|:---:|:---|
-| **Frontend** | JavaFX 21, FXML, CSS |
-| **Backend** | Spring Boot 3.3.1, Spring Security |
-| **Database** | SQLite (prod), H2 (demo) |
-| **Auth** | JWT (JSON Web Tokens) |
-| **Real-time** | WebSocket (STOMP) |
-| **Build** | Maven (multi-module) |
+|:---|:---|
+| Frontend | JavaFX 21, FXML, CSS |
+| Backend | Spring Boot 3.3.1, Spring Security |
+| Database | SQLite (prod), H2 in-memory (demo) |
+| Auth | JWT, Google OAuth 2.0 |
+| Real-time | WebSocket (STOMP) |
+| Build | Maven, multi-module (`backend`, `frontend`) |
 
-</div>
+## Install
 
----
+Needs [Java 21](https://adoptium.net/) and [Maven 3.8+](https://maven.apache.org/download.cgi). From the repository root:
 
-## 📦 Installation
-
-### Prerequisites
-
-- **Java 21** or higher ([Download](https://adoptium.net/))
-- **Maven 3.8+** ([Download](https://maven.apache.org/download.cgi))
-- Git
-
-### Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/dmitthedazed/B-TSIKT_Semestralne-Zadanie.git
-cd B-TSIKT_Semestralne-Zadanie
-
-# Build the project
+```sh
 mvn clean install
+```
 
-# Start the backend (Terminal 1)
+## Run
+
+Backend (terminal 1), then frontend (terminal 2):
+
+```sh
 mvn -pl backend spring-boot:run
+```
 
-# Start the frontend (Terminal 2)
+```sh
 mvn -pl frontend javafx:run
 ```
 
-> 📝 **Note:** The SQLite database file is auto-created on first run.
+> [!NOTE]
+> The SQLite file is created on first run.
 
----
+### Demo mode
 
-## 🚀 Usage
+H2 in-memory database with seeded data, backend on port `8081`:
 
-### 🎮 Demo Mode
+```sh
+mvn -pl backend spring-boot:run -Dspring-boot.run.profiles=demo
+```
 
-Try the app instantly with pre-seeded data 
-
-```bash
-# Start demo backend (H2 in-memory, port 8081)
-cd backend
-mvn spring-boot:run "-Dspring-boot.run.profiles=demo"
-
-# Start frontend pointing to demo
+```sh
 mvn -pl frontend javafx:run -DAPI_BASE_URL=http://localhost:8081/api
 ```
 
-Or simply click **"Try Demo"** on the login screen!
+Click **Try demo** on the login screen, or sign in manually:
 
-| Demo Credentials |  |
+| Email | Password |
 |:---|:---|
-| 📧 Email | `demo@example.com` |
-| 🔑 Password | `demo123` |
-
-### Default Ports
+| `demo@example.com` | `demo123` |
 
 | Service | Port |
-|:---:|:---:|
-| Backend (Production) | `8080` |
-| Backend (Demo) | `8081` |
+|:---|:---:|
+| Backend (production) | `8080` |
+| Backend (demo) | `8081` |
 
----
+### Tests
 
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        CLIENT (JavaFX)                       │
-├─────────────────────────────────────────────────────────────┤
-│  Controllers (FXML)  │  ApiService  │  WebSocket Client     │
-│         ↓            │      ↓       │         ↓             │
-│       Views          │  HTTP/JWT    │    STOMP Messages     │
-└──────────────────────┴──────────────┴───────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      SERVER (Spring Boot)                    │
-├─────────────────────────────────────────────────────────────┤
-│  REST Controllers  │  WebSocket Handler  │  Security Filter │
-│         ↓          │         ↓           │        ↓         │
-│     Services       │    Notification     │   JWT Validator  │
-│         ↓          │      Service        │                  │
-│   Repositories     │                     │                  │
-│         ↓          │                     │                  │
-│    JPA/Hibernate   │                     │                  │
-│         ↓          │                     │                  │
-│      SQLite        │                     │                  │
-└─────────────────────────────────────────────────────────────┘
+```sh
+mvn test
 ```
 
-### 📊 Data Model
+Backend only: `mvn -pl backend test`.
+
+## Architecture
+
+```
+JavaFX client                          Spring Boot server
+┌─────────────────────┐   HTTP + JWT   ┌──────────────────────────────┐
+│ FXML controllers    │ ─────────────► │ REST controllers + JWT filter│
+│ ApiService          │                │ Services → Repositories (JPA)│
+│ WebSocket client    │ ◄───────────── │ WebSocketNotificationService │──► SQLite
+└─────────────────────┘     STOMP      └──────────────────────────────┘
+```
+
+<details>
+<summary><b>Data model</b></summary>
 
 ```mermaid
 erDiagram
@@ -243,12 +117,12 @@ erDiagram
     USERS ||--o{ TASKS : creates
     USERS ||--o{ RESOURCES : uploads
     USERS ||--o{ ACTIVITY_LOG : generates
-    
+
     GROUPS ||--o{ MEMBERSHIPS : contains
     GROUPS ||--o{ TASKS : has
     GROUPS ||--o{ RESOURCES : stores
     GROUPS ||--o{ ACTIVITY_LOG : tracks
-    
+
     USERS {
         int user_id PK
         string nickname
@@ -256,7 +130,7 @@ erDiagram
         string password_hash
         datetime created_at
     }
-    
+
     GROUPS {
         int group_id PK
         string name
@@ -264,7 +138,7 @@ erDiagram
         int created_by FK
         datetime created_at
     }
-    
+
     MEMBERSHIPS {
         int id PK
         int user_id FK
@@ -272,7 +146,7 @@ erDiagram
         enum role "CREATOR|ADMIN|MEMBER"
         datetime joined_at
     }
-    
+
     TASKS {
         int task_id PK
         int group_id FK
@@ -284,7 +158,7 @@ erDiagram
         datetime deadline
         datetime created_at
     }
-    
+
     RESOURCES {
         int resource_id PK
         int group_id FK
@@ -296,7 +170,7 @@ erDiagram
         string description
         datetime uploaded_at
     }
-    
+
     ACTIVITY_LOG {
         int id PK
         int user_id FK
@@ -308,51 +182,61 @@ erDiagram
     }
 ```
 
----
-
-## 📡 API Reference
-
-<details>
-<summary><b>🔐 Authentication</b></summary>
-
-| Method | Endpoint | Description |
-|:---:|:---|:---|
-| `POST` | `/api/auth/register` | Register new user |
-| `POST` | `/api/auth/login` | Login & get JWT |
-
 </details>
 
 <details>
-<summary><b>👤 Users</b></summary>
+<summary><b>Project structure</b></summary>
+
+```
+├── backend/                 # Spring Boot
+│   └── src/main/
+│       ├── java/com/combined/backend/
+│       │   ├── config/      # Security, WebSocket
+│       │   ├── controller/  # REST endpoints
+│       │   ├── dto/
+│       │   ├── model/       # JPA entities
+│       │   ├── repository/
+│       │   └── service/
+│       └── resources/       # application.properties, application-demo.properties
+├── frontend/                # JavaFX
+│   └── src/main/
+│       ├── java/            # Controllers, services
+│       └── resources/       # fxml/, css/, img/
+├── docs/screenshots/
+└── pom.xml                  # Parent POM
+```
+
+</details>
+
+## API
+
+All endpoints except `/api/auth/*` require a JWT.
+
+<details>
+<summary><b>Auth and users</b></summary>
 
 | Method | Endpoint | Description |
 |:---:|:---|:---|
-| `GET` | `/api/users/me` | Get current user |
+| `POST` | `/api/auth/register` | Register |
+| `POST` | `/api/auth/login` | Log in, get JWT |
+| `GET` | `/api/users/me` | Current user |
 | `PUT` | `/api/users/me` | Update profile |
 | `POST` | `/api/users/me/change-password` | Change password |
 
 </details>
 
 <details>
-<summary><b>👥 Groups</b></summary>
+<summary><b>Groups and memberships</b></summary>
 
 | Method | Endpoint | Description |
 |:---:|:---|:---|
-| `GET` | `/api/groups` | List all groups |
-| `GET` | `/api/groups/my` | List my groups |
-| `GET` | `/api/groups/available` | List joinable groups |
+| `GET` | `/api/groups` | All groups |
+| `GET` | `/api/groups/my` | My groups |
+| `GET` | `/api/groups/available` | Joinable groups |
 | `POST` | `/api/groups` | Create group |
-| `GET` | `/api/groups/{id}` | Get group details |
-
-</details>
-
-<details>
-<summary><b>🤝 Memberships</b></summary>
-
-| Method | Endpoint | Description |
-|:---:|:---|:---|
-| `POST` | `/api/memberships/join/{groupId}` | Join group |
-| `POST` | `/api/memberships/leave/{groupId}` | Leave group |
+| `GET` | `/api/groups/{id}` | Group details |
+| `POST` | `/api/memberships/join/{groupId}` | Join |
+| `POST` | `/api/memberships/leave/{groupId}` | Leave |
 | `GET` | `/api/memberships/group/{groupId}/members` | List members |
 | `POST` | `/api/memberships/group/{groupId}/add-member` | Add member |
 | `POST` | `/api/memberships/group/{groupId}/add-member-by-email` | Add by email |
@@ -362,34 +246,34 @@ erDiagram
 </details>
 
 <details>
-<summary><b>✅ Tasks</b></summary>
+<summary><b>Tasks</b></summary>
 
 | Method | Endpoint | Description |
 |:---:|:---|:---|
-| `POST` | `/api/tasks` | Create task |
-| `GET` | `/api/tasks/group/{id}` | List group tasks |
-| `GET` | `/api/tasks/my` | List my tasks |
-| `PUT` | `/api/tasks/{id}` | Update task |
-| `DELETE` | `/api/tasks/{id}` | Delete task |
+| `POST` | `/api/tasks` | Create |
+| `GET` | `/api/tasks/group/{id}` | Group tasks |
+| `GET` | `/api/tasks/my` | My tasks |
+| `PUT` | `/api/tasks/{id}` | Update |
+| `DELETE` | `/api/tasks/{id}` | Delete |
 
 </details>
 
 <details>
-<summary><b>📁 Resources</b></summary>
+<summary><b>Resources</b></summary>
 
 | Method | Endpoint | Description |
 |:---:|:---|:---|
-| `GET` | `/api/resources/group/{id}` | List resources |
-| `POST` | `/api/resources` | Create resource (link) |
+| `GET` | `/api/resources/group/{id}` | List |
+| `POST` | `/api/resources` | Create (link) |
 | `POST` | `/api/resources/upload` | Upload file |
-| `PUT` | `/api/resources/{id}` | Update resource |
-| `DELETE` | `/api/resources/{id}` | Delete resource |
-| `GET` | `/api/resources/{id}/download` | Download file |
+| `PUT` | `/api/resources/{id}` | Update |
+| `DELETE` | `/api/resources/{id}` | Delete |
+| `GET` | `/api/resources/{id}/download` | Download |
 
 </details>
 
 <details>
-<summary><b>📊 Statistics & Activity</b></summary>
+<summary><b>Statistics and activity</b></summary>
 
 | Method | Endpoint | Description |
 |:---:|:---|:---|
@@ -399,117 +283,40 @@ erDiagram
 
 </details>
 
----
+### WebSocket
 
-## WebSocket Events
+STOMP topics: `/topic/group/{groupId}` and `/topic/user/{userId}`. Each message carries a `type` and a `message`.
 
-Real-time notifications via STOMP over WebSocket:
-
-| Event | Description |
+| Type | Meaning |
 |:---|:---|
-| `task.created` | New task added |
-| `task.updated` | Task modified |
-| `task.deleted` | Task removed |
-| `task.status` | Status changed |
-| `resource.added` | New material uploaded |
-| `member.joined` | New member joined |
-| `member.role` | Role changed |
+| `TASK_CREATED` | Task added |
+| `TASK_UPDATED`, `TASK_UPDATE` | Task changed |
+| `TASK_DELETED` | Task removed |
+| `RESOURCE_UPLOADED` | New material |
+| `USER_JOINED` | New member |
 
----
+## Security
 
-## 📁 Project Structure
-
-```
-B-TSIKT_Semestralne-Zadanie
-├──  backend/                    # Spring Boot backend
-│   ├──  src/main/java/com/combined/backend/
-│   │   ├──  config/             # Security, WebSocket config
-│   │   ├──  controller/         # REST endpoints
-│   │   ├──  dto/                # Data transfer objects
-│   │   ├──  model/              # JPA entities
-│   │   ├──  repository/         # Data access layer
-│   │   ├──  service/            # Business logic
-│   │   └──  BackendApplication.java
-│   └──  src/main/resources/
-│       ├──  application.properties
-│       └──  application-demo.properties
-├──  frontend/                   # JavaFX client
-│   ├──  src/main/java/          # Controllers & services
-│   └──  src/main/resources/
-│       ├──  fxml/               # UI layouts
-│       ├──  css/                # Stylesheets
-│       └──  img/                # Images
-├──  pom.xml                     # Parent POM
-└──  README.md
-```
-
----
-
-## 🔒 Security
-
-| Feature | Implementation |
+| Area | Implementation |
 |:---|:---|
-| **Authentication** | JWT tokens with configurable expiration |
-| **Password Storage** | BCrypt hashing |
-| **Authorization** | Role-based (CREATOR > ADMIN > MEMBER) |
-| **API Protection** | All endpoints require valid JWT |
-| **CSRF** | Disabled (stateless API) |
-| **User Identity** | `@AuthenticationPrincipal` prevents spoofing |
+| Authentication | JWT with configurable expiration, Google OAuth 2.0 |
+| Passwords | BCrypt |
+| Authorization | Role-based: CREATOR > ADMIN > MEMBER |
+| CSRF | Disabled (stateless API) |
+| Identity | `@AuthenticationPrincipal` prevents spoofing |
 
-### Access Control Rules
+- **Creator**: full control, cannot be removed or demoted.
+- **Admin**: manages members (except the creator), resources and tasks.
+- **Member**: views resources, manages own tasks.
 
-- ✅ **Creator**: Full control, cannot be removed/demoted
-- ✅ **Admin**: Manage members (except creator), manage resources/tasks
-- ✅ **Member**: View resources, manage own tasks
+## AI assistance
 
----
+GitHub Copilot and Claude (Anthropic) were used for boilerplate and DTOs, debugging, review suggestions, tests and design discussion. The generated code was reviewed, tested and edited by hand.
 
-## Testing
+## Author
 
-```bash
-# Run all tests
-mvn test
+Dmitrii Savin ([@dmitthedazed](https://github.com/dmitthedazed)), semester project.
 
-# Run backend tests only
-mvn -pl backend test
+## License
 
-# Run with coverage report
-mvn -pl backend test jacoco:report
-```
-
-##  AI Assistance
-
-This project was developed with the assistance of AI tools, specifically **GitHub Copilot** and **Claude** (Anthropic). AI was used to:
-
-| Area | How AI Helped |
-|:---|:---|
-| **Code Generation** | Accelerating boilerplate code, DTOs, and repetitive patterns |
-| **Debugging** | Identifying issues and suggesting fixes for complex bugs |
-| **Code Review** | Suggesting improvements for code quality and best practices |
-| **Testing** | Helping write unit and integration tests |
-| **Architecture** | Discussing design patterns and architectural decisions |
-
-> ⚠️ **Important:** All AI-generated code was carefully reviewed, tested, and modified.AI served as a productivity tool, not a replacement for understanding and critical thinking.
-
----
-
-## 👨‍💻 Author
-
-<div align="center">
-
-**Dmitrii Savin**
-
-[![GitHub](https://img.shields.io/badge/GitHub-dmitthedazed-181717?style=for-the-badge&logo=github)](https://github.com/dmitthedazed)
-
-*Semester Project — B-TSIKT*
-
-</div>
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
+[MIT](LICENSE)
